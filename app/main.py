@@ -1,12 +1,9 @@
-from app.config.settings import settings
+from app.assistant import NovaAssistant
 
 
 def main():
-    print("=" * 40)
-    print(settings.APP_NAME)
-    print(settings.VERSION)
-    print(settings.DEFAULT_LANGUAGE)
-    print("=" * 40)
+    assistant = NovaAssistant()
+    assistant.start()
 
 
 if __name__ == "__main__":

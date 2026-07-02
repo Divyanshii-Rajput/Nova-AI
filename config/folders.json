@@ -1,0 +1,8 @@
+{
+    "Desktop": "%USERPROFILE%\\Desktop",
+    "Downloads": "%USERPROFILE%\\Downloads",
+    "Documents": "%USERPROFILE%\\Documents",
+    "Pictures": "%USERPROFILE%\\Pictures",
+    "Videos": "%USERPROFILE%\\Videos",
+    "Music": "%USERPROFILE%\\Music"
+}

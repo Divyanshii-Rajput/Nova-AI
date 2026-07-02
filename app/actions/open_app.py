@@ -1,30 +1,31 @@
+import json
 import subprocess
+from pathlib import Path
 
 
 class AppLauncher:
-    """
-    Opens desktop applications.
-    """
 
-    APPS = {
-        "chrome": r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        "notepad": "notepad.exe",
-        "calculator": "calc.exe",
-        "paint": "mspaint.exe",
-    }
+    def __init__(self):
+
+        config_path = Path("config/apps.json")
+
+        with open(config_path, "r") as file:
+
+            self.apps = json.load(file)
 
     def open_application(self, text: str):
 
         text = text.lower()
 
-        for app in self.APPS:
+        for keyword, command in self.apps.items():
 
-            if app in text:
+            if keyword in text:
 
                 try:
-                    subprocess.Popen(self.APPS[app])
 
-                    print(f"✅ Opening {app.title()}")
+                    subprocess.Popen(command)
+
+                    print(f"✅ Opening {keyword}")
 
                     return True
 

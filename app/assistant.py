@@ -1,3 +1,5 @@
+import string
+
 from app.config.settings import settings
 from app.router.intent_router import IntentRouter
 from app.services.voice_engine import VoiceEngine
@@ -35,13 +37,28 @@ class NovaAssistant:
 
             print(f"You said : {text}")
 
-            text_lower = text.lower()
+            # ----------------------------
+            # Clean text
+            # ----------------------------
 
-            if text_lower in ["exit", "quit", "stop", "bye"]:
+            text_lower = text.lower().strip()
 
-                from app.browser.browser_manager import BrowserManager
+            text_lower = text_lower.translate(
+                str.maketrans("", "", string.punctuation)
+            )
 
-                BrowserManager().close()
+            # ----------------------------
+            # Exit Commands
+            # ----------------------------
+
+            if text_lower in [
+                "exit",
+                "quit",
+                "stop",
+                "bye",
+                "goodbye",
+                "close nova"
+            ]:
 
                 print("\n👋 Goodbye!")
 
@@ -49,8 +66,16 @@ class NovaAssistant:
 
                 break
 
+            # ----------------------------
+            # Detect Intent
+            # ----------------------------
+
             intent = self.router.detect_intent(text)
 
             print(f"Detected Intent : {intent.value}")
+
+            # ----------------------------
+            # Execute Action
+            # ----------------------------
 
             self.actions.execute(intent, text)

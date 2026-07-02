@@ -10,10 +10,6 @@ class IntentRouter:
 
         text = text.lower()
 
-        # -------------------------
-        # Music
-        # -------------------------
-
         music_keywords = [
             "play",
             "song",
@@ -25,13 +21,8 @@ class IntentRouter:
         if any(word in text for word in music_keywords):
             return Intent.PLAY_MUSIC
 
-        # -------------------------
-        # Websites
-        # -------------------------
-
         websites = [
             "youtube",
-            "spotify",
             "gmail",
             "github",
             "linkedin",
@@ -43,9 +34,9 @@ class IntentRouter:
         if any(site in text for site in websites):
             return Intent.OPEN_WEBSITE
 
-        # -------------------------
-        # Desktop Apps
-        # -------------------------
+        # Spotify should be treated as music
+        if "spotify" in text:
+            return Intent.PLAY_MUSIC
 
         app_keywords = [
             "open",

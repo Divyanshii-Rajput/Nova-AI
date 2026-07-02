@@ -39,6 +39,10 @@ class NovaAssistant:
 
             if text_lower in ["exit", "quit", "stop", "bye"]:
 
+                from app.browser.browser_manager import BrowserManager
+
+                BrowserManager().close()
+
                 print("\n👋 Goodbye!")
 
                 self.running = False

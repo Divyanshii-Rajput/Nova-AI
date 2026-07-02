@@ -1,56 +1,37 @@
-import time
 from urllib.parse import quote_plus
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
+from app.browser.browser_manager import BrowserManager
 
 
 class YouTubePlayer:
-    """
-    Opens YouTube and plays the first search result.
-    """
 
     def __init__(self):
 
-        options = Options()
+        self.browser = BrowserManager()
 
-        options.add_experimental_option(
-            "excludeSwitches",
-            ["enable-logging"]
-        )
+    def play(self, song):
 
-        self.driver = webdriver.Chrome(
-            service=Service(
-                ChromeDriverManager().install()
-            ),
-            options=options
-        )
-
-    def play(self, song: str):
+        page = self.browser.get_page()
 
         url = (
             "https://www.youtube.com/results?search_query="
             + quote_plus(song)
         )
 
-        self.driver.get(url)
+        page.goto(url)
 
-        time.sleep(3)
+        page.wait_for_timeout(3000)
 
-        videos = self.driver.find_elements(
-            By.ID,
-            "video-title"
-        )
+        videos = page.locator("a#video-title")
 
-        if videos:
+        if videos.count():
 
-            videos[0].click()
+            videos.first.click()
 
             print(f"🎵 Playing {song}")
 
-        else:
+            return True
 
-            print("No video found.")
+        print("Video not found.")
+
+        return False

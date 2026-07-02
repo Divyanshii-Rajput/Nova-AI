@@ -1,17 +1,21 @@
-from app.browser.youtube import YouTubePlayer
+from app.music.youtube_player import YouTubePlayer
 
 
 class MusicEngine:
 
     def __init__(self):
 
-        self.youtube = YouTubePlayer()
+        self.youtube = None
 
-    def play(self, text: str):
+    def play(self, text):
+
+        if self.youtube is None:
+
+            self.youtube = YouTubePlayer()
 
         text = text.lower()
 
-        words = [
+        remove_words = [
             "play",
             "song",
             "music",
@@ -20,7 +24,7 @@ class MusicEngine:
             "please",
         ]
 
-        for word in words:
+        for word in remove_words:
 
             text = text.replace(word, "")
 

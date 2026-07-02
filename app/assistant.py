@@ -1,19 +1,30 @@
 from app.config.settings import settings
+from app.voice.recorder import AudioRecorder
+from app.voice.transcriber import SpeechTranscriber
 
 
 class NovaAssistant:
-    """
-    Main controller for the Nova AI Assistant.
-    Coordinates initialization and future services.
-    """
 
     def __init__(self):
-        self.app_name = settings.APP_NAME
-        self.version = settings.VERSION
+
+        self.name = settings.APP_NAME
+
+        self.recorder = AudioRecorder()
+
+        self.transcriber = SpeechTranscriber()
 
     def start(self):
+
         print("=" * 50)
-        print(f"🚀 Welcome to {self.app_name}")
-        print(f"Version : {self.version}")
+        print(self.name)
         print("=" * 50)
-        print("Nova AI has started successfully!")
+
+        audio = self.recorder.record()
+
+        text = self.transcriber.transcribe(audio)
+
+        print()
+
+        print("You said:")
+
+        print(text)

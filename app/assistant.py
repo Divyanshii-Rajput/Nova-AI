@@ -16,24 +16,37 @@ class NovaAssistant:
 
         self.actions = ActionEngine()
 
-    def start(self):
+        self.running = True
+
+    def run(self):
 
         print("=" * 50)
-        print(self.name)
+        print(f"🚀 {self.name} Started")
         print("=" * 50)
 
-        text = self.voice.listen()
+        while self.running:
 
-        print()
+            print("\n🎤 Listening...\n")
 
-        print(f"You said : {text}")
+            text = self.voice.listen()
 
-        intent = self.router.detect_intent(text)
+            if not text:
+                continue
 
-        print()
+            print(f"You said : {text}")
 
-        print(f"Detected Intent : {intent.value}")
+            text_lower = text.lower()
 
-        print()
+            if text_lower in ["exit", "quit", "stop", "bye"]:
 
-        self.actions.execute(intent, text)
+                print("\n👋 Goodbye!")
+
+                self.running = False
+
+                break
+
+            intent = self.router.detect_intent(text)
+
+            print(f"Detected Intent : {intent.value}")
+
+            self.actions.execute(intent, text)

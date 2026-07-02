@@ -2,8 +2,10 @@ from app.assistant import NovaAssistant
 
 
 def main():
+
     assistant = NovaAssistant()
-    assistant.start()
+
+    assistant.run()
 
 
 if __name__ == "__main__":

@@ -29,6 +29,7 @@ frozenlist==1.8.0
 fsspec==2026.6.0
 gitdb==4.0.12
 GitPython==3.1.50
+greenlet==3.5.3
 h11==0.16.0
 hf-xet==1.5.1
 httpcore==1.0.9
@@ -51,9 +52,11 @@ narwhals==2.23.0
 numpy==2.5.0
 onnxruntime==1.27.0
 openai==2.44.0
+outcome==1.3.0.post0
 packaging==26.2
 pandas==3.0.3
 pillow==12.3.0
+playwright==1.61.0
 propcache==0.5.2
 protobuf==7.35.1
 psutil==7.2.2
@@ -64,6 +67,7 @@ pydantic==2.13.4
 pydantic-settings==2.14.2
 pydantic_core==2.46.4
 pydeck==0.9.2
+pyee==13.0.1
 pygame==2.6.1
 PyGetWindow==0.0.9
 Pygments==2.20.0
@@ -71,6 +75,7 @@ PyMsgBox==2.0.1
 pyperclip==1.11.0
 PyRect==0.2.0
 PyScreeze==1.0.1
+PySocks==1.7.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 python-multipart==0.0.32
@@ -87,6 +92,7 @@ shellingham==1.5.4
 six==1.17.0
 smmap==5.0.3
 sniffio==1.3.1
+sortedcontainers==2.4.0
 sounddevice==0.5.5
 soundfile==0.14.0
 soupsieve==2.8.4
@@ -100,6 +106,8 @@ tenacity==9.1.4
 tokenizers==0.23.1
 toml==0.10.2
 tqdm==4.68.3
+trio==0.33.0
+trio-websocket==0.12.2
 typer==0.25.1
 typing-inspection==0.4.2
 typing_extensions==4.15.0
@@ -107,7 +115,9 @@ tzdata==2026.2
 urllib3==2.7.0
 uvicorn==0.49.0
 watchdog==6.0.0
+websocket-client==1.9.0
 websockets==16.0
 Werkzeug==3.1.8
 wikipedia==1.4.0
+wsproto==1.3.2
 yarl==1.24.2

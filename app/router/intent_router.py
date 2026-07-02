@@ -3,47 +3,57 @@ from app.models.intent import Intent
 
 class IntentRouter:
     """
-    Determines the user's intent based on the recognized text.
+    Determines the user's intent.
     """
-
-    def __init__(self):
-
-        self.app_keywords = [
-            "open",
-            "launch",
-            "start"
-        ]
-
-        self.music_keywords = [
-            "play",
-            "song",
-            "music"
-        ]
-
-        self.web_keywords = [
-            "search",
-            "google"
-        ]
 
     def detect_intent(self, text: str) -> Intent:
 
         text = text.lower()
 
-        # ---------- Open Application ----------
+        # -------------------------
+        # Music
+        # -------------------------
 
-        if any(word in text for word in self.app_keywords):
-            return Intent.OPEN_APP
+        music_keywords = [
+            "play",
+            "song",
+            "music",
+            "gaana",
+            "gana"
+        ]
 
-        # ---------- Play Music ----------
-
-        if any(word in text for word in self.music_keywords):
+        if any(word in text for word in music_keywords):
             return Intent.PLAY_MUSIC
 
-        # ---------- Search Web ----------
+        # -------------------------
+        # Websites
+        # -------------------------
 
-        if any(word in text for word in self.web_keywords):
-            return Intent.SEARCH_WEB
+        websites = [
+            "youtube",
+            "spotify",
+            "gmail",
+            "github",
+            "linkedin",
+            "leetcode",
+            "chatgpt",
+            "geeksforgeeks"
+        ]
 
-        # ---------- AI ----------
+        if any(site in text for site in websites):
+            return Intent.OPEN_WEBSITE
+
+        # -------------------------
+        # Desktop Apps
+        # -------------------------
+
+        app_keywords = [
+            "open",
+            "launch",
+            "start"
+        ]
+
+        if any(word in text for word in app_keywords):
+            return Intent.OPEN_APP
 
         return Intent.AI_CHAT

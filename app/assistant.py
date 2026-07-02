@@ -1,6 +1,7 @@
 from app.config.settings import settings
 from app.router.intent_router import IntentRouter
 from app.services.voice_engine import VoiceEngine
+from app.services.action_engine import ActionEngine
 
 
 class NovaAssistant:
@@ -12,6 +13,8 @@ class NovaAssistant:
         self.voice = VoiceEngine()
 
         self.router = IntentRouter()
+
+        self.actions = ActionEngine()
 
     def start(self):
 
@@ -30,3 +33,7 @@ class NovaAssistant:
         print()
 
         print(f"Detected Intent : {intent.value}")
+
+        print()
+
+        self.actions.execute(intent, text)

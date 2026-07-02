@@ -7,9 +7,15 @@ class Intent(Enum):
     """
 
     OPEN_APP = "open_app"
-    OPEN_FILE = "open_file"
+
+    OPEN_WEBSITE = "open_website"
+
     PLAY_MUSIC = "play_music"
+
+    OPEN_FILE = "open_file"
+
     SEARCH_WEB = "search_web"
+
     SYSTEM = "system"
 
     AI_CHAT = "ai_chat"

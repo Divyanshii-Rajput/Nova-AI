@@ -1,6 +1,6 @@
 from app.config.settings import settings
-from app.voice.recorder import AudioRecorder
-from app.voice.transcriber import SpeechTranscriber
+from app.router.intent_router import IntentRouter
+from app.services.voice_engine import VoiceEngine
 
 
 class NovaAssistant:
@@ -9,9 +9,9 @@ class NovaAssistant:
 
         self.name = settings.APP_NAME
 
-        self.recorder = AudioRecorder()
+        self.voice = VoiceEngine()
 
-        self.transcriber = SpeechTranscriber()
+        self.router = IntentRouter()
 
     def start(self):
 
@@ -19,12 +19,14 @@ class NovaAssistant:
         print(self.name)
         print("=" * 50)
 
-        audio = self.recorder.record()
-
-        text = self.transcriber.transcribe(audio)
+        text = self.voice.listen()
 
         print()
 
-        print("You said:")
+        print(f"You said : {text}")
 
-        print(text)
+        intent = self.router.detect_intent(text)
+
+        print()
+
+        print(f"Detected Intent : {intent.value}")

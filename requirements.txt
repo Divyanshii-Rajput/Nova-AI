@@ -83,6 +83,7 @@ python-vlc==3.0.21203
 pytweening==1.2.0
 pywhatkit==5.4
 PyYAML==6.0.3
+RapidFuzz==3.14.5
 referencing==0.37.0
 requests==2.34.2
 rich==15.0.0

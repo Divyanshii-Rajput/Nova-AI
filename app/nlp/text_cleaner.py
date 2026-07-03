@@ -4,7 +4,7 @@ import string
 
 class TextCleaner:
     """
-    Cleans Whisper output before intent detection.
+    Cleans Whisper output before NLP processing.
     """
 
     def clean(self, text: str) -> str:
@@ -12,7 +12,7 @@ class TextCleaner:
         if not text:
             return ""
 
-        text = text.lower()
+        text = text.lower().strip()
 
         text = text.translate(
             str.maketrans("", "", string.punctuation)
@@ -20,4 +20,4 @@ class TextCleaner:
 
         text = re.sub(r"\s+", " ", text)
 
-        return text.strip()
+        return text

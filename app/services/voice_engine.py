@@ -1,4 +1,4 @@
-from app.voice.recorder import AudioRecorder
+from app.audio.recorder import AudioRecorder
 from app.voice.transcriber import SpeechTranscriber
 
 

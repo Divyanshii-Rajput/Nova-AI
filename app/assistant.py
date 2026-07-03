@@ -1,7 +1,7 @@
 from app.config.settings import settings
 from app.router.intent_router import IntentRouter
 from app.services.voice_engine import VoiceEngine
-from app.services.action_engine import ActionEngine
+from app.core.action_engine import ActionEngine
 
 from app.nlp.text_cleaner import TextCleaner
 from app.nlp.alias_matcher import AliasMatcher

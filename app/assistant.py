@@ -1,9 +1,10 @@
-import string
-
 from app.config.settings import settings
 from app.router.intent_router import IntentRouter
 from app.services.voice_engine import VoiceEngine
 from app.services.action_engine import ActionEngine
+
+from app.nlp.text_cleaner import TextCleaner
+from app.nlp.alias_matcher import AliasMatcher
 
 
 class NovaAssistant:
@@ -17,6 +18,10 @@ class NovaAssistant:
         self.router = IntentRouter()
 
         self.actions = ActionEngine()
+
+        self.cleaner = TextCleaner()
+
+        self.aliases = AliasMatcher()
 
         self.running = True
 
@@ -35,23 +40,15 @@ class NovaAssistant:
             if not text:
                 continue
 
-            print(f"You said : {text}")
+            print(f"Original : {text}")
 
-            # ----------------------------
-            # Clean text
-            # ----------------------------
+            text = self.cleaner.clean(text)
 
-            text_lower = text.lower().strip()
+            text = self.aliases.normalize(text)
 
-            text_lower = text_lower.translate(
-                str.maketrans("", "", string.punctuation)
-            )
+            print(f"Normalized : {text}")
 
-            # ----------------------------
-            # Exit Commands
-            # ----------------------------
-
-            if text_lower in [
+            if text in [
                 "exit",
                 "quit",
                 "stop",
@@ -66,16 +63,8 @@ class NovaAssistant:
 
                 break
 
-            # ----------------------------
-            # Detect Intent
-            # ----------------------------
-
             intent = self.router.detect_intent(text)
 
             print(f"Detected Intent : {intent.value}")
-
-            # ----------------------------
-            # Execute Action
-            # ----------------------------
 
             self.actions.execute(intent, text)

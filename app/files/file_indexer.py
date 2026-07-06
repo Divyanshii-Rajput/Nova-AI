@@ -1,132 +1,598 @@
+from __future__ import annotations
+
 import json
+import logging
 import os
+from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Dict, List
+
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass(slots=True)
+class FileEntry:
+    """
+    Represents one indexed file.
+    """
+
+    name: str
+
+    path: str
+
+    extension: str
+
+    size: int
+
+    modified: float
+
+    directory: str
 
 
 class FileIndexer:
     """
-    Builds an in-memory searchable file index.
+    Production File Indexer.
+
+    Features
+
+    ✓ Multi-drive indexing
+
+    ✓ Cache
+
+    ✓ Incremental refresh
+
+    ✓ Ignore Windows folders
+
+    ✓ Fast loading
+
+    ✓ Metadata
     """
 
-    # Only useful document/media types
-    ALLOWED_EXTENSIONS = {
+    CACHE_FILE = Path(
+        "assets/cache/file_index.json"
+    )
 
-        ".pdf",
+    IGNORE_FOLDERS = {
 
-        ".doc",
+        "$recycle.bin",
 
-        ".docx",
+        "system volume information",
 
-        ".ppt",
+        "windows",
 
-        ".pptx",
+        "programdata",
 
-        ".xls",
+        "appdata",
 
-        ".xlsx",
+        "temp",
 
-        ".txt",
-
-        ".csv",
-
-        ".jpg",
-
-        ".jpeg",
-
-        ".png",
-
-        ".mp3",
-
-        ".mp4",
-
-        ".zip"
-
-    }
-
-    # Ignore these folders completely
-    SKIP_FOLDERS = {
+        "tmp",
 
         ".git",
 
-        "node_modules",
-
         "__pycache__",
 
-        "venv",
+        "node_modules",
 
         ".venv",
 
-        "AppData",
-
-        "Program Files",
-
-        "Program Files (x86)",
-
-        "Windows"
+        "venv",
 
     }
 
     def __init__(self):
 
-        self.index = []
+        self.files: Dict[
+            str,
+            FileEntry,
+        ] = {}
 
-        config = Path("config/folders.json")
+    # -------------------------------------------------
+    # Startup
+    # -------------------------------------------------
 
-        with open(config, "r") as f:
+    def load(self):
 
-            self.folders = json.load(f)
+        """
+        Load existing cache.
 
-    def build_index(self):
+        Returns
 
-        self.index.clear()
+        -------
 
-        print("\n📂 Building Smart File Index...\n")
+        bool
+
+        True if cache exists.
+        """
+
+        if not self.CACHE_FILE.exists():
+
+            return False
+
+        try:
+
+            with open(
+
+                self.CACHE_FILE,
+
+                "r",
+
+                encoding="utf8",
+
+            ) as file:
+
+                data = json.load(file)
+
+            self.files.clear()
+
+            for item in data:
+
+                entry = FileEntry(**item)
+
+                self.files[
+                    entry.path
+                ] = entry
+
+            logger.info(
+
+                "Loaded %d indexed files.",
+
+                len(self.files),
+
+            )
+
+            return True
+
+        except Exception as e:
+
+            logger.exception(e)
+
+            return False
+
+    # -------------------------------------------------
+
+    def save(self):
+
+        """
+        Save cache.
+        """
+
+        self.CACHE_FILE.parent.mkdir(
+
+            parents=True,
+
+            exist_ok=True,
+
+        )
+
+        with open(
+
+            self.CACHE_FILE,
+
+            "w",
+
+            encoding="utf8",
+
+        ) as file:
+
+            json.dump(
+
+                [
+
+                    asdict(x)
+
+                    for x in self.files.values()
+
+                ],
+
+                file,
+
+                indent=2,
+
+            )
+
+    # -------------------------------------------------
+    # Utilities
+    # -------------------------------------------------
+
+    @staticmethod
+    def valid_folder(folder: str) -> bool:
+
+        folder = folder.lower()
+
+        return folder not in FileIndexer.IGNORE_FOLDERS
+
+    @staticmethod
+    def make_entry(path: Path):
+
+        stat = path.stat()
+
+        return FileEntry(
+
+            name=path.name,
+
+            path=str(path),
+
+            extension=path.suffix.lower(),
+
+            size=stat.st_size,
+
+            modified=stat.st_mtime,
+
+            directory=str(path.parent),
+
+        )
+    
+        # -------------------------------------------------
+    # Drives
+    # -------------------------------------------------
+
+    def available_drives(self) -> List[Path]:
+        """
+        Return all available Windows drives.
+
+        Example:
+            C:\
+            D:\
+            E:\
+        """
+
+        drives = []
+
+        for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+
+            drive = Path(f"{letter}:\\")
+
+            if drive.exists():
+
+                drives.append(drive)
+
+        return drives
+
+    # -------------------------------------------------
+    # Index
+    # -------------------------------------------------
+
+    def build(self):
+
+        """
+        Build complete file index.
+        """
+
+        logger.info("Building file index...")
+
+        self.files.clear()
 
         total = 0
 
-        for folder in self.folders.values():
+        for drive in self.available_drives():
 
-            folder = os.path.expandvars(folder)
+            logger.info(
+                "Scanning drive %s",
+                drive,
+            )
 
-            if not os.path.exists(folder):
-                continue
+            total += self._scan_drive(drive)
 
-            for root, dirs, files in os.walk(folder):
+        logger.info(
+            "Indexed %d files.",
+            total,
+        )
 
-                # Skip unwanted folders
-                dirs[:] = [
+        self.save()
 
-                    d
+    # -------------------------------------------------
 
-                    for d in dirs
+    def _scan_drive(
+        self,
+        drive: Path,
+    ) -> int:
 
-                    if d not in self.SKIP_FOLDERS
+        indexed = 0
 
-                ]
+        for root, dirs, files in os.walk(
+            drive,
+            topdown=True,
+        ):
 
-                for file in files:
+            # -------------------------
+            # Ignore folders
+            # -------------------------
 
-                    extension = Path(file).suffix.lower()
+            dirs[:] = [
 
-                    if extension not in self.ALLOWED_EXTENSIONS:
+                d
+
+                for d in dirs
+
+                if self.valid_folder(d)
+
+            ]
+
+            root = Path(root)
+
+            for file in files:
+
+                try:
+
+                    path = root / file
+
+                    if not path.exists():
+
                         continue
 
-                    self.index.append({
+                    entry = self.make_entry(path)
 
-                        "name": file.lower(),
+                    self.files[
+                        entry.path
+                    ] = entry
 
-                        "stem": Path(file).stem.lower(),
+                    indexed += 1
 
-                        "extension": extension,
+                except (
+                    PermissionError,
+                    FileNotFoundError,
+                    OSError,
+                ):
 
-                        "path": os.path.join(root, file)
+                    continue
 
-                    })
+        return indexed
 
-                    total += 1
+    # -------------------------------------------------
+    # Incremental
+    # -------------------------------------------------
 
-        print(f"✅ Indexed {total} useful files.\n")
+    def refresh(self):
 
-    def get_index(self):
+        """
+        Refresh cache.
 
-        return self.index
+        Currently performs
+        a full rebuild.
+        """
+
+        self.build()
+
+    # -------------------------------------------------
+    # Extensions
+    # -------------------------------------------------
+
+    def filter_extension(
+        self,
+        extension: str,
+    ) -> List[FileEntry]:
+
+        extension = extension.lower()
+
+        if not extension.startswith("."):
+
+            extension = "." + extension
+
+        return [
+
+            file
+
+            for file in self.files.values()
+
+            if file.extension == extension
+
+        ]
+
+    # -------------------------------------------------
+    # Statistics
+    # -------------------------------------------------
+
+    def count(self) -> int:
+
+        return len(self.files)
+
+    def directories(self) -> int:
+
+        return len({
+
+            file.directory
+
+            for file in self.files.values()
+
+        })
+
+    def extensions(self):
+
+        result = {}
+
+        for file in self.files.values():
+
+            result.setdefault(
+
+                file.extension,
+
+                0,
+
+            )
+
+            result[file.extension] += 1
+
+        return result
+    
+        # -------------------------------------------------
+    # Searching
+    # -------------------------------------------------
+
+    def search_by_name(
+        self,
+        filename: str,
+    ) -> List[FileEntry]:
+        """
+        Exact filename search.
+        """
+
+        filename = filename.lower()
+
+        return [
+
+            file
+
+            for file in self.files.values()
+
+            if file.name.lower() == filename
+
+        ]
+
+    def search_contains(
+        self,
+        keyword: str,
+    ) -> List[FileEntry]:
+        """
+        Search files containing keyword.
+        """
+
+        keyword = keyword.lower()
+
+        return [
+
+            file
+
+            for file in self.files.values()
+
+            if keyword in file.name.lower()
+
+        ]
+
+    # -------------------------------------------------
+    # Recent Files
+    # -------------------------------------------------
+
+    def recent_files(
+        self,
+        limit: int = 20,
+    ) -> List[FileEntry]:
+
+        return sorted(
+
+            self.files.values(),
+
+            key=lambda x: x.modified,
+
+            reverse=True,
+
+        )[:limit]
+
+    # -------------------------------------------------
+    # Largest Files
+    # -------------------------------------------------
+
+    def largest_files(
+        self,
+        limit: int = 20,
+    ) -> List[FileEntry]:
+
+        return sorted(
+
+            self.files.values(),
+
+            key=lambda x: x.size,
+
+            reverse=True,
+
+        )[:limit]
+
+    # -------------------------------------------------
+    # Cleanup
+    # -------------------------------------------------
+
+    def remove_missing(self):
+
+        """
+        Remove deleted files from cache.
+        """
+
+        deleted = []
+
+        for path in self.files:
+
+            if not Path(path).exists():
+
+                deleted.append(path)
+
+        for path in deleted:
+
+            del self.files[path]
+
+        if deleted:
+
+            logger.info(
+
+                "Removed %d missing files.",
+
+                len(deleted),
+
+            )
+
+            self.save()
+
+    # -------------------------------------------------
+    # Export
+    # -------------------------------------------------
+
+    def values(self) -> List[FileEntry]:
+
+        return list(self.files.values())
+
+    def paths(self) -> List[str]:
+
+        return list(self.files.keys())
+
+    # -------------------------------------------------
+    # Magic Methods
+    # -------------------------------------------------
+
+    def __len__(self):
+
+        return len(self.files)
+
+    def __contains__(
+        self,
+        filepath: str,
+    ):
+
+        return filepath in self.files
+
+    def __iter__(self):
+
+        return iter(self.files.values())
+
+    # -------------------------------------------------
+    # Build If Needed
+    # -------------------------------------------------
+
+    def initialize(self):
+        """
+        Load cache.
+        Build cache if missing.
+        """
+
+        if not self.load():
+
+            logger.info(
+                "No cache found."
+            )
+
+            self.build()
+
+    # -------------------------------------------------
+    # Information
+    # -------------------------------------------------
+
+    def info(self):
+
+        return {
+
+            "files": len(self.files),
+
+            "directories": self.directories(),
+
+            "extensions": len(self.extensions()),
+
+        }

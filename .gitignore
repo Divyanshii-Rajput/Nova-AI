@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 logs/
 .vscode/
+# Large local files
+app.zip
+models/
+*.pt

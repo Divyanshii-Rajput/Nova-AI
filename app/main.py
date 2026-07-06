@@ -1,12 +1,13 @@
-from app.assistant import NovaAssistant
+from app.assistant import Assistant
 
 
 def main():
 
-    assistant = NovaAssistant()
+    assistant = Assistant()
 
     assistant.run()
 
 
 if __name__ == "__main__":
+
     main()

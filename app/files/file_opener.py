@@ -1,18 +1,51 @@
 import os
+import platform
+import subprocess
+from pathlib import Path
 
 
 class FileOpener:
+    """
+    Opens files using the operating system's
+    default application.
+    """
 
-    def open(self, path):
+    def open(self, file_path: str) -> bool:
 
-        if path is None:
+        if not file_path:
+            print("❌ Empty file path.")
+            return False
 
-            print("❌ File not found.")
+        path = Path(file_path)
+
+        if not path.exists():
+
+            print("❌ File does not exist.")
 
             return False
 
-        os.startfile(path)
+        try:
 
-        print(f"📂 Opened:\n{path}")
+            system = platform.system()
 
-        return True
+            if system == "Windows":
+
+                os.startfile(path)
+
+            elif system == "Darwin":
+
+                subprocess.Popen(["open", str(path)])
+
+            else:
+
+                subprocess.Popen(["xdg-open", str(path)])
+
+            print(f"📄 Opening:\n{path}")
+
+            return True
+
+        except Exception as error:
+
+            print(error)
+
+            return False

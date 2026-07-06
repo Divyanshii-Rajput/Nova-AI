@@ -1,10 +1,61 @@
 {
-    "youtube": "https://www.youtube.com",
-    "github": "https://github.com",
-    "leetcode": "https://leetcode.com",
-    "geeksforgeeks": "https://www.geeksforgeeks.org",
-    "gmail": "https://mail.google.com",
-    "linkedin": "https://linkedin.com",
-    "spotify": "https://open.spotify.com",
-    "chatgpt": "https://chat.openai.com"
+    "github": {
+        "url": "https://github.com",
+        "aliases": [
+            "github",
+            "git hub"
+        ]
+    },
+
+    "gmail": {
+        "url": "https://mail.google.com",
+        "aliases": [
+            "gmail",
+            "mail"
+        ]
+    },
+
+    "youtube": {
+        "url": "https://youtube.com",
+        "aliases": [
+            "youtube",
+            "you tube"
+        ]
+    },
+
+    "linkedin": {
+        "url": "https://linkedin.com",
+        "aliases": [
+            "linkedin",
+            "linked in"
+        ]
+    },
+
+    "leetcode": {
+        "url": "https://leetcode.com",
+        "aliases": [
+            "leetcode",
+            "leet code",
+            "lead code",
+            "lead core"
+        ]
+    },
+
+    "geeksforgeeks": {
+        "url": "https://www.geeksforgeeks.org",
+        "aliases": [
+            "geeksforgeeks",
+            "geeks for geeks",
+            "gfg"
+        ]
+    },
+
+    "chatgpt": {
+        "url": "https://chat.openai.com",
+        "aliases": [
+            "chatgpt",
+            "chat gpt",
+            "chat g p t"
+        ]
+    }
 }

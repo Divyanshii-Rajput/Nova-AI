@@ -1,8 +1,59 @@
 {
-    "Desktop": "%USERPROFILE%\\Desktop",
-    "Downloads": "%USERPROFILE%\\Downloads",
-    "Documents": "%USERPROFILE%\\Documents",
-    "Pictures": "%USERPROFILE%\\Pictures",
-    "Videos": "%USERPROFILE%\\Videos",
-    "Music": "%USERPROFILE%\\Music"
+    "downloads": {
+        "path": "downloads",
+        "aliases": [
+            "downloads",
+            "download",
+            "download folder",
+            "my downloads"
+        ]
+    },
+
+    "desktop": {
+        "path": "desktop",
+        "aliases": [
+            "desktop",
+            "home screen"
+        ]
+    },
+
+    "documents": {
+        "path": "documents",
+        "aliases": [
+            "documents",
+            "docs"
+        ]
+    },
+
+    "pictures": {
+        "path": "pictures",
+        "aliases": [
+            "pictures",
+            "photos"
+        ]
+    },
+
+    "videos": {
+        "path": "videos",
+        "aliases": [
+            "videos",
+            "movies"
+        ]
+    },
+
+    "music": {
+        "path": "music",
+        "aliases": [
+            "music",
+            "songs"
+        ]
+    },
+
+    "nova": {
+        "path": "C:\\Users\\divya\\Downloads\\Desktop\\Nova-AI",
+        "aliases": [
+            "nova",
+            "nova project"
+        ]
+    }
 }

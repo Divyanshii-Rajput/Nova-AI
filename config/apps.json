@@ -1,10 +1,9 @@
 {
+    "calculator": "calc",
+    "paint": "mspaint",
+    "notepad": "notepad",
+    "cmd": "cmd",
     "chrome": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-    "notepad": "notepad.exe",
-    "calculator": "calc.exe",
-    "calculate": "calc.exe",
-    "calc": "calc.exe",
-    "paint": "mspaint.exe",
-    "cmd": "cmd.exe",
-    "command prompt": "cmd.exe"
+    "spotify": "spotify",
+    "vscode": "code"
 }

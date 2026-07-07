@@ -39,7 +39,7 @@ from app.ui.constants import (
 )
 from app.ui.resources import resources
 from app.ui.widgets.search_bar import SearchBar
-
+from app.memory.conversation_memory import conversation_memory
 
 class HistoryPage(QWidget):
     """
@@ -58,10 +58,11 @@ class HistoryPage(QWidget):
     ) -> None:
 
         super().__init__(parent)
-
+        self.memory = conversation_memory
         self.setObjectName("HistoryPage")
 
         self._build_ui()
+        self.refresh()
 
     # ======================================================
     # UI
@@ -194,22 +195,51 @@ class HistoryPage(QWidget):
         )
 
         self.clearButton.clicked.connect(
-            self.clearRequested
+            self._clear
         )
     
-        # ======================================================
+    # ======================================================
     # Slots
     # ======================================================
 
+    def _clear(self):
+
+        self.memory.clear()
+
+        self.clear_history()
+
+        self.previewText.setPlainText(
+            "No conversation history available."
+        )
+        
+        
     def _history_selected(
         self,
         item: QListWidgetItem,
     ) -> None:
         """
-        Handle history selection.
+        Display the selected conversation.
         """
 
-        self.historySelected.emit(item.text())
+        index = self.historyList.row(item)
+
+        history = self.memory.all()
+
+        if index >= len(history):
+            return
+
+        conversation = history[index]
+
+        self.set_preview(
+            f"""👤 User
+
+    {conversation.user}
+
+    🤖 Nova
+
+    {conversation.assistant}
+    """
+        )
 
     # ======================================================
     # Public API
@@ -279,6 +309,30 @@ class HistoryPage(QWidget):
 
         if row >= 0:
             self.historyList.takeItem(row)
+    
+    def refresh(self):
+
+        self.clear_history()
+
+        history = self.memory.all()
+
+        if not history:
+
+            self.previewText.setPlainText(
+                "No conversation history available."
+            )
+
+            return
+
+        for conversation in history:
+
+            self.add_history(
+                conversation.title
+            )
+
+        self.previewText.setPlainText(
+            "Select a conversation to view."
+        )
 
     # ======================================================
     # Utilities

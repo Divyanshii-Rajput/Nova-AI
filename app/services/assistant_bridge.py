@@ -6,6 +6,7 @@ from PySide6.QtCore import QObject, Signal, Slot
 
 from app.assistant import Assistant
 from app.ui.thread_manager import thread_manager
+from app.memory.conversation_memory import conversation_memory
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class AssistantBridge(QObject):
         super().__init__()
 
         self.assistant = Assistant()
-
+        self.memory = conversation_memory
 
     @Slot(str)
     def process_message(
@@ -67,7 +68,16 @@ class AssistantBridge(QObject):
         print("MESSAGE:", repr(response.message))
         print("DATA:", response.data)
 
-        return response.message or "Command executed successfully."
+        reply = response.message or "Command executed successfully."
+
+        self.memory.add(
+            message,
+            reply,
+        )
+
+        print("History size:", len(self.memory.all()))
+        
+        return reply
 
     def _handle_error(
         self,

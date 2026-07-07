@@ -208,7 +208,7 @@ class MainWindow(QMainWindow):
         Register all application pages.
         """
 
-        pages = {
+        self.pages = {
 
             HOME_PAGE: HomePage(),
 
@@ -228,7 +228,7 @@ class MainWindow(QMainWindow):
 
         }
 
-        for page_id, widget in pages.items():
+        for page_id, widget in self.pages.items():
 
             navigation_manager.register_page(
                 page_id,
@@ -312,6 +312,13 @@ class MainWindow(QMainWindow):
             self._sidebar.set_current_page(
                 page_id
             )
+
+        # Refresh history whenever user opens it
+        if page_id == HISTORY_PAGE:
+
+            history_page = self.pages[HISTORY_PAGE]
+
+            history_page.refresh()
 
         logger.info(
             "Current page: %s",

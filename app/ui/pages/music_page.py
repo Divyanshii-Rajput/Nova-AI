@@ -37,7 +37,8 @@ from app.ui.constants import (
     SPACE_16,
 )
 from app.ui.resources import resources
-
+from app.ui.widgets.search_bar import SearchBar
+from app.music.music_engine import MusicEngine
 
 class MusicPage(QWidget):
     """
@@ -60,7 +61,7 @@ class MusicPage(QWidget):
     ) -> None:
 
         super().__init__(parent)
-
+        self.engine = MusicEngine()
         self.setObjectName("MusicPage")
 
         self._build_ui()
@@ -81,6 +82,14 @@ class MusicPage(QWidget):
         )
 
         root.setSpacing(PAGE_SPACING)
+
+        self.searchBar = SearchBar(
+            "Play a song..."
+        )
+
+        root.addWidget(
+            self.searchBar
+        )
 
         # ==================================================
         # Album
@@ -263,8 +272,45 @@ class MusicPage(QWidget):
         self.previousButton.clicked.connect(
             self.previousRequested
         )
+
+        self.searchBar.searchRequested.connect(
+            self._play_song
+        )
+        
+    def _play_song(
+        self,
+        song: str,
+    ) -> None:
+        """
+        Play a song from the search bar.
+        """
+
+        song = song.strip()
+
+        if not song:
+            return
+
+        response = self.engine.play(song)
+
+        self.trackTitle.setText(song)
+
+        self.artistLabel.setText(response.message)
+
+        self.clear_playlist()
+
+        try:
+            results = self.engine.search(song)
+
+            for item in results:
+                self.playlist.addItem(str(item))
+
+        except Exception:
+            pass
     
-        # ======================================================
+    
+    
+    
+    # ======================================================
     # Public API
     # ======================================================
 

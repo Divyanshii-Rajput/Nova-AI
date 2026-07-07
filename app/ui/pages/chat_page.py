@@ -9,22 +9,21 @@ Primary conversational interface.
 Responsibilities
 ----------------
 - Display conversation history
-- Stream assistant responses
 - Accept user input
-- Send messages
+- Send messages to AssistantBridge
+- Display backend responses
 - Auto-scroll
 """
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLineEdit,
     QPushButton,
     QScrollArea,
-    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -35,8 +34,11 @@ from app.ui.constants import (
     SPACE_12,
     SPACE_16,
 )
+
 from app.ui.resources import resources
 from app.ui.widgets.chat_bubble import ChatBubble
+
+from app.services.assistant_bridge import AssistantBridge
 
 
 class ChatPage(QWidget):
@@ -53,7 +55,23 @@ class ChatPage(QWidget):
 
         super().__init__(parent)
 
-        self.setObjectName("ChatPage")
+        self.setObjectName(
+            "ChatPage"
+        )
+
+        self.bridge = AssistantBridge()
+
+        self.bridge.response_ready.connect(
+            self._on_response
+        )
+
+        self.bridge.processing_started.connect(
+            lambda: self.set_input_enabled(False)
+        )
+
+        self.bridge.processing_finished.connect(
+            lambda: self.set_input_enabled(True)
+        )
 
         self._build_ui()
 
@@ -72,17 +90,23 @@ class ChatPage(QWidget):
             SPACE_16,
         )
 
-        root.setSpacing(PAGE_SPACING)
+        root.setSpacing(
+            PAGE_SPACING
+        )
 
         self.scrollArea = QScrollArea()
 
-        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setWidgetResizable(
+            True
+        )
 
         self.scrollArea.setFrameShape(
             QFrame.Shape.NoFrame
         )
 
-        root.addWidget(self.scrollArea)
+        root.addWidget(
+            self.scrollArea
+        )
 
         self.chatContainer = QWidget()
 
@@ -100,15 +124,13 @@ class ChatPage(QWidget):
             self.chatContainer
         )
 
-        # ==================================================
-        # Input
-        # ==================================================
 
         inputRow = QHBoxLayout()
 
         inputRow.setSpacing(
             SPACE_12
         )
+
 
         self.messageEdit = QLineEdit()
 
@@ -127,6 +149,7 @@ class ChatPage(QWidget):
         inputRow.addWidget(
             self.messageEdit
         )
+
 
         self.sendButton = QPushButton()
 
@@ -148,71 +171,93 @@ class ChatPage(QWidget):
             self.sendButton
         )
 
+
         root.addLayout(
             inputRow
         )
-    
-        # ======================================================
+
+
+    # ======================================================
     # Messaging
     # ======================================================
 
     def _send_message(self) -> None:
-        """
-        Send the current message.
-        """
 
-        message = self.messageEdit.text().strip()
+        message = (
+            self.messageEdit
+            .text()
+            .strip()
+        )
 
         if not message:
             return
 
-        self.add_user_message(message)
 
-        self.messageSent.emit(message)
+        self.add_user_message(
+            message
+        )
 
         self.messageEdit.clear()
+
+
+        self.messageSent.emit(
+            message
+        )
+
+
+        self.bridge.process_message(
+            message
+        )
+
+
+    def _on_response(
+        self,
+        response: str,
+    ) -> None:
+
+        self.add_assistant_message(
+            response
+        )
+
 
     def add_user_message(
         self,
         message: str,
     ) -> ChatBubble:
-        """
-        Add a user message bubble.
-        """
 
         bubble = ChatBubble(
             message,
             is_user=True,
         )
 
-        self._insert_bubble(bubble)
+        self._insert_bubble(
+            bubble
+        )
 
         return bubble
+
 
     def add_assistant_message(
         self,
         message: str,
     ) -> ChatBubble:
-        """
-        Add an assistant message bubble.
-        """
 
         bubble = ChatBubble(
             message,
             is_user=False,
         )
 
-        self._insert_bubble(bubble)
+        self._insert_bubble(
+            bubble
+        )
 
         return bubble
+
 
     def _insert_bubble(
         self,
         bubble: ChatBubble,
     ) -> None:
-        """
-        Insert a bubble before the bottom stretch.
-        """
 
         index = max(
             0,
@@ -222,18 +267,18 @@ class ChatPage(QWidget):
         self.chatLayout.insertWidget(
             index,
             bubble,
+            0,
+            Qt.AlignmentFlag.AlignTop,
         )
 
         self.scroll_to_bottom()
+
 
     # ======================================================
     # Utilities
     # ======================================================
 
     def clear_chat(self) -> None:
-        """
-        Remove all chat bubbles.
-        """
 
         while self.chatLayout.count() > 1:
 
@@ -241,51 +286,58 @@ class ChatPage(QWidget):
 
             widget = item.widget()
 
-            if widget is not None:
+            if widget:
                 widget.deleteLater()
 
-    def scroll_to_bottom(self) -> None:
-        """
-        Scroll to the latest message.
-        """
 
-        scrollbar = self.scrollArea.verticalScrollBar()
+    def scroll_to_bottom(self) -> None:
+
+        scrollbar = (
+            self.scrollArea
+            .verticalScrollBar()
+        )
 
         scrollbar.setValue(
             scrollbar.maximum()
         )
 
+
     def message_count(self) -> int:
-        """
-        Return the number of displayed messages.
-        """
 
         return max(
             0,
             self.chatLayout.count() - 1,
         )
 
+
     def set_input_enabled(
         self,
         enabled: bool,
     ) -> None:
-        """
-        Enable or disable the input controls.
-        """
 
-        self.messageEdit.setEnabled(enabled)
+        self.messageEdit.setEnabled(
+            enabled
+        )
 
-        self.sendButton.setEnabled(enabled)
+        self.sendButton.setEnabled(
+            enabled
+        )
+
 
     def sizeHint(self):
-        from PySide6.QtCore import QSize
 
-        return QSize(1200, 800)
+        return QSize(
+            1200,
+            800,
+        )
+
 
     def minimumSizeHint(self):
-        from PySide6.QtCore import QSize
 
-        return QSize(900, 600)
+        return QSize(
+            900,
+            600,
+        )
 
 
 __all__ = [

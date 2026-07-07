@@ -2,53 +2,41 @@
 Nova AI Desktop Assistant
 -------------------------
 
-Chat Bubble
+Modern Chat Bubble
 
-Modern message bubble inspired by
-ChatGPT Desktop and Cursor.
-
-Supports
-
-- User messages
-- Assistant messages
-- Markdown-ready text
-- Timestamp
-- Avatar
-- Copy support
+Uses QLabel instead of QTextBrowser for
+correct automatic sizing.
 """
 
 from __future__ import annotations
 
 from datetime import datetime
 
-from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import (
+    QApplication,
     QFrame,
     QHBoxLayout,
     QLabel,
     QPushButton,
-    QApplication,
-    QTextBrowser,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
 
 from app.ui.constants import (
     CHAT_AVATAR_SIZE,
-    CHAT_BUBBLE_RADIUS,
     CHAT_MARGIN,
     CHAT_SPACING,
     ICON_16,
-    SPACE_12,
     SPACE_8,
+    SPACE_12,
 )
+
 from app.ui.resources import resources
 
 
 class ChatBubble(QFrame):
-    """
-    Single chat message widget.
-    """
 
     def __init__(
         self,
@@ -57,18 +45,15 @@ class ChatBubble(QFrame):
         is_user: bool,
         timestamp: datetime | None = None,
         parent: QWidget | None = None,
-    ) -> None:
+    ):
 
         super().__init__(parent)
 
         self._message = message
-
         self._is_user = is_user
+        self._timestamp = timestamp or datetime.now()
 
-        self._timestamp = (
-            timestamp
-            or datetime.now()
-        )
+        self.setFrameShape(QFrame.Shape.NoFrame)
 
         self.setObjectName(
             "UserBubble"
@@ -76,17 +61,11 @@ class ChatBubble(QFrame):
             else "AssistantBubble"
         )
 
-        self.setFrameShape(
-            QFrame.Shape.NoFrame
-        )
-
         self._build_ui()
 
-    # ======================================================
-    # UI
-    # ======================================================
+    # -------------------------------------------------
 
-    def _build_ui(self) -> None:
+    def _build_ui(self):
 
         root = QHBoxLayout(self)
 
@@ -110,7 +89,7 @@ class ChatBubble(QFrame):
 
             avatar.setPixmap(
                 resources.icon(
-                    "fa6s.user",
+                    "fa6s.user"
                 ).pixmap(
                     CHAT_AVATAR_SIZE,
                     CHAT_AVATAR_SIZE,
@@ -121,7 +100,7 @@ class ChatBubble(QFrame):
 
             avatar.setPixmap(
                 resources.icon(
-                    "fa6s.robot",
+                    "fa6s.robot"
                 ).pixmap(
                     CHAT_AVATAR_SIZE,
                     CHAT_AVATAR_SIZE,
@@ -134,43 +113,50 @@ class ChatBubble(QFrame):
             "BubbleContainer"
         )
 
-        bubble_layout = QVBoxLayout(
-            bubble
+        bubble.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Maximum,
         )
 
-        bubble_layout.setContentsMargins(
+        layout = QVBoxLayout(bubble)
+
+        layout.setContentsMargins(
             SPACE_12,
             SPACE_12,
             SPACE_12,
             SPACE_12,
         )
 
-        bubble_layout.setSpacing(6)
+        layout.setSpacing(8)
 
-        self.messageView = QTextBrowser()
-
-        self.messageView.setOpenExternalLinks(
-            True
-        )
-
-        self.messageView.setFrameShape(
-            QFrame.Shape.NoFrame
-        )
-
-        self.messageView.setMarkdown(
+        self.messageLabel = QLabel(
             self._message
         )
 
-        bubble_layout.addWidget(
-            self.messageView
+        self.messageLabel.setWordWrap(True)
+
+        self.messageLabel.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+
+        self.messageLabel.setAlignment(
+            Qt.AlignmentFlag.AlignLeft
+            | Qt.AlignmentFlag.AlignTop
+        )
+
+        self.messageLabel.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Preferred,
+        )
+
+        layout.addWidget(
+            self.messageLabel
         )
 
         footer = QHBoxLayout()
 
         self.timeLabel = QLabel(
-            self._timestamp.strftime(
-                "%H:%M"
-            )
+            self._timestamp.strftime("%H:%M")
         )
 
         footer.addWidget(
@@ -200,7 +186,7 @@ class ChatBubble(QFrame):
             self.copyButton
         )
 
-        bubble_layout.addLayout(
+        layout.addLayout(
             footer
         )
 
@@ -208,15 +194,25 @@ class ChatBubble(QFrame):
 
             root.addStretch()
 
-            root.addWidget(bubble)
+            root.addWidget(
+                bubble,
+                1,
+            )
 
-            root.addWidget(avatar)
+            root.addWidget(
+                avatar
+            )
 
         else:
 
-            root.addWidget(avatar)
+            root.addWidget(
+                avatar
+            )
 
-            root.addWidget(bubble)
+            root.addWidget(
+                bubble,
+                1,
+            )
 
             root.addStretch()
 
@@ -230,9 +226,8 @@ class ChatBubble(QFrame):
 
     def message(self) -> str:
         """
-        Return the message text.
+        Return current message.
         """
-
         return self._message
 
     def setMessage(
@@ -240,28 +235,36 @@ class ChatBubble(QFrame):
         message: str,
     ) -> None:
         """
-        Update the displayed message.
+        Replace message.
         """
 
         self._message = message
 
-        self.messageView.setMarkdown(message)
+        self.messageLabel.setText(
+            message
+        )
+
+        self.updateGeometry()
 
     def appendMessage(
         self,
         text: str,
     ) -> None:
         """
-        Append streamed text to the current message.
+        Append streamed text.
         """
 
         self._message += text
 
-        self.messageView.setMarkdown(self._message)
+        self.messageLabel.setText(
+            self._message
+        )
+
+        self.updateGeometry()
 
     def isUser(self) -> bool:
         """
-        Return True if this is a user message.
+        Returns True if this is a user bubble.
         """
 
         return self._is_user
@@ -270,9 +273,6 @@ class ChatBubble(QFrame):
         self,
         timestamp: datetime,
     ) -> None:
-        """
-        Update the timestamp.
-        """
 
         self._timestamp = timestamp
 
@@ -286,14 +286,12 @@ class ChatBubble(QFrame):
 
     def copyMessage(self) -> None:
         """
-        Copy the message to the clipboard.
+        Copy message to clipboard.
         """
 
-        clipboard = (
-            QApplication.clipboard()
+        QApplication.clipboard().setText(
+            self._message
         )
-
-        clipboard.setText(self._message)
 
     # ======================================================
     # Appearance
@@ -303,11 +301,8 @@ class ChatBubble(QFrame):
         self,
         enabled: bool,
     ) -> None:
-        """
-        Enable or disable text selection.
-        """
 
-        self.messageView.setTextInteractionFlags(
+        self.messageLabel.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
             if enabled
             else Qt.TextInteractionFlag.NoTextInteraction
@@ -318,33 +313,44 @@ class ChatBubble(QFrame):
         read_only: bool,
     ) -> None:
         """
-        Set the message view read-only state.
+        Compatibility with previous API.
+        QLabel is always read-only.
         """
-
-        self.messageView.setReadOnly(read_only)
+        return
 
     # ======================================================
     # Utilities
     # ======================================================
 
     def clear(self) -> None:
-        """
-        Clear the message contents.
-        """
 
         self._message = ""
 
-        self.messageView.clear()
+        self.messageLabel.clear()
 
-    def sizeHint(self):
-        from PySide6.QtCore import QSize
+    def sizeHint(self) -> QSize:
 
-        return QSize(700, 120)
+        hint = self.messageLabel.sizeHint()
 
-    def minimumSizeHint(self):
-        from PySide6.QtCore import QSize
+        return QSize(
+            min(
+                max(
+                    hint.width() + 60,
+                    320,
+                ),
+                700,
+            ),
+            hint.height() + 70,
+        )
 
-        return QSize(320, 90)
+    def minimumSizeHint(self) -> QSize:
+
+        hint = self.messageLabel.sizeHint()
+
+        return QSize(
+            320,
+            hint.height() + 70,
+        )
 
 
 __all__ = [

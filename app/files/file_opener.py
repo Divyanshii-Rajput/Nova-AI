@@ -40,7 +40,12 @@ class FileOpener:
 
                 subprocess.Popen(["xdg-open", str(path)])
 
-            print(f"📄 Opening:\n{path}")
+            print("=" * 60)
+            print("Opening file:")
+            print(path)
+            print("Exists:", path.exists())
+            print("Suffix:", path.suffix)
+            print("=" * 60)
 
             return True
 

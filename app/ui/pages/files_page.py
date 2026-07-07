@@ -39,7 +39,7 @@ from app.ui.constants import (
 )
 from app.ui.resources import resources
 from app.ui.widgets.search_bar import SearchBar
-
+from app.files.file_engine import FileEngine
 
 class FilesPage(QWidget):
     """
@@ -58,6 +58,7 @@ class FilesPage(QWidget):
     ) -> None:
 
         super().__init__(parent)
+        self.engine = FileEngine()
 
         self.setObjectName("FilesPage")
 
@@ -189,7 +190,7 @@ class FilesPage(QWidget):
         # ==================================================
 
         self.searchBar.searchRequested.connect(
-            self.searchRequested
+            self._search
         )
 
         self.fileList.itemClicked.connect(
@@ -216,18 +217,38 @@ class FilesPage(QWidget):
         Handle file selection.
         """
 
-        self.fileSelected.emit(item.text())
+        file = item.data(Qt.ItemDataRole.UserRole)
+
+        if file is None:
+            return
+
+        self.fileSelected.emit(file.path)
+
+        self.set_preview(
+            f"""Name      : {file.name}
+
+    Path      : {file.path}
+
+    Extension : {file.extension}
+
+    Directory : {file.directory}"""
+        )
 
     def _item_opened(
         self,
         item: QListWidgetItem,
     ) -> None:
         """
-        Handle double-click open.
+        Handle double-click.
         """
 
-        self.fileOpened.emit(item.text())
+        file = item.data(Qt.ItemDataRole.UserRole)
 
+        if file is None:
+            return
+
+        self.engine._open_file(file)
+        
     def _open_selected(self) -> None:
         """
         Open the currently selected file.
@@ -238,31 +259,71 @@ class FilesPage(QWidget):
         if item is None:
             return
 
-        self.fileOpened.emit(item.text())
+        file = item.data(Qt.ItemDataRole.UserRole)
 
+        if file is None:
+            return
+
+        self.engine._open_file(file)
+
+    def _search(
+        self,
+        query: str,
+    ) -> None:
+
+        query = query.strip()
+
+        if not query:
+            return
+
+        self.clear_files()
+
+        results = self.engine.search(query)
+
+        if not results:
+
+            self.clear_files()
+
+            self.set_preview(
+                "No matching files found."
+            )
+
+            return
+
+        for file in results:
+
+            item = QListWidgetItem(file.name)
+            item.setData(Qt.ItemDataRole.UserRole, file)
+            self.fileList.addItem(item)
+
+        self.set_preview(
+            f"{len(results)} file(s) found."
+        )
+    
+    
     # ======================================================
     # Public API
     # ======================================================
 
-    def add_file(
-        self,
-        filename: str,
-    ) -> None:
-        """
-        Add a file to the list.
-        """
+    # def add_file(
+    #     self,
+    #     filename: str,
+    # ) -> None:
+    #     """
+    #     Add a file to the list.
+    #     """
 
-        self.fileList.addItem(filename)
+    #     self.fileList.addItem(filename)
 
-    def add_files(
-        self,
-        filenames: list[str],
-    ) -> None:
-        """
-        Add multiple files.
-        """
+    # def add_files(
+    #     self,
+    #     filenames: list[str],
+    # ) -> None:
+    #     """
+    #     Add multiple files.
+    #     """
 
-        self.fileList.addItems(filenames)
+    #     self.fileList.addItems(filenames)
 
     def clear_files(self) -> None:
         """

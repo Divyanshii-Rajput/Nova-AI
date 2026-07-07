@@ -34,7 +34,7 @@ class FileSearch:
 
     CONTAINS_SCORE = 75
 
-    FUZZY_THRESHOLD = 60
+    FUZZY_THRESHOLD = 80
 
     RECENT_BONUS = 5
 
@@ -383,12 +383,13 @@ class FileSearch:
 
         if fuzzy >= self.FUZZY_THRESHOLD:
 
+            # Ignore weak fuzzy matches
+            if fuzzy < 85 and query not in filename:
+                return 0
+
             score = max(
-
                 score,
-
                 fuzzy * 7,
-
             )
 
         if score == 0:

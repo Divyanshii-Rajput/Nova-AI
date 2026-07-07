@@ -42,7 +42,7 @@ from app.ui.widgets.loading_indicator import (
 from app.ui.widgets.search_bar import (
     SearchBar,
 )
-
+from app.browser.browser_manager import BrowserManager
 
 class BrowserPage(QWidget):
     """
@@ -65,6 +65,8 @@ class BrowserPage(QWidget):
     ) -> None:
 
         super().__init__(parent)
+        
+        self.manager = BrowserManager()
 
         self.setObjectName("BrowserPage")
 
@@ -236,10 +238,42 @@ class BrowserPage(QWidget):
         )
 
         self.searchBar.searchRequested.connect(
-            self.urlRequested
+            self._search
         )
     
-        # ======================================================
+    def _search(
+        self,
+        text: str,
+    ) -> None:
+        """
+        Search Google or open a website.
+        """
+
+        text = text.strip()
+
+        if not text:
+            return
+
+        self.set_loading(True)
+
+        if (
+            "." in text
+            or text.lower() in self.manager.KNOWN_WEBSITES
+        ):
+
+            response = self.manager.open_website(text)
+
+        else:
+
+            response = self.manager.search_google(text)
+
+        self.placeholder.setText(
+            response.message
+        )
+
+        self.set_loading(False)
+    
+    # ======================================================
     # Public API
     # ======================================================
 

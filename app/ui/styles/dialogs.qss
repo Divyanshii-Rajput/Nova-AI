@@ -1,0 +1,316 @@
+/*
+Nova AI Desktop Assistant
+-------------------------
+
+Dialog Stylesheet
+
+Contains styling for:
+- Dialog windows
+- Message boxes
+- Confirmation dialogs
+- Input dialogs
+- Custom modal components
+*/
+
+
+/* ==========================================================
+   Base Dialog
+   ========================================================== */
+
+QDialog {
+
+    background-color: #151820;
+
+    border-radius: 16px;
+
+}
+
+
+QDialog QLabel {
+
+    color: #E8EAED;
+
+}
+
+
+/* ==========================================================
+   Dialog Title
+   ========================================================== */
+
+#DialogTitle {
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    color: #FFFFFF;
+
+}
+
+
+#DialogSubtitle {
+
+    font-size: 14px;
+
+    color: #A8AFBC;
+
+}
+
+
+/* ==========================================================
+   Dialog Container
+   ========================================================== */
+
+#DialogContainer {
+
+    background-color: #181C24;
+
+    border: 1px solid #292F3B;
+
+    border-radius: 16px;
+
+    padding: 20px;
+
+}
+
+
+/* ==========================================================
+   Message Box
+   ========================================================== */
+
+QMessageBox {
+
+    background-color: #151820;
+
+}
+
+
+QMessageBox QLabel {
+
+    color: #E8EAED;
+
+    font-size: 14px;
+
+}
+
+
+QMessageBox QPushButton {
+
+    min-width: 90px;
+
+    min-height: 34px;
+
+    border-radius: 8px;
+
+}
+
+
+/* ==========================================================
+   Input Dialog
+   ========================================================== */
+
+QInputDialog {
+
+    background-color: #151820;
+
+}
+
+
+QInputDialog QLineEdit {
+
+    background-color: #181C24;
+
+    border: 1px solid #303746;
+
+    border-radius: 10px;
+
+    padding: 10px;
+
+}
+
+
+/* ==========================================================
+   Dialog Buttons
+   ========================================================== */
+
+QDialogButtonBox {
+
+    spacing: 10px;
+
+}
+
+
+QDialogButtonBox QPushButton {
+
+    padding: 8px 18px;
+
+}
+
+
+QDialogButtonBox QPushButton:hover {
+
+    border-color: #5B8CFF;
+
+}
+
+/* ==========================================================
+   Confirmation Dialog
+   ========================================================== */
+
+#ConfirmationDialog {
+
+    min-width: 420px;
+
+}
+
+
+#ConfirmationDialog QLabel {
+
+    font-size: 15px;
+
+    color: #DCE1EA;
+
+}
+
+
+/* ==========================================================
+   Warning / Error Dialogs
+   ========================================================== */
+
+.warning-dialog {
+
+    border: 1px solid #F4B400;
+
+}
+
+
+.error-dialog {
+
+    border: 1px solid #FF5C5C;
+
+}
+
+
+.success-dialog {
+
+    border: 1px solid #2ECC71;
+
+}
+
+
+/* ==========================================================
+   Dialog Icons
+   ========================================================== */
+
+#DialogIcon {
+
+    min-width: 48px;
+
+    min-height: 48px;
+
+}
+
+
+/* ==========================================================
+   Progress Dialog
+   ========================================================== */
+
+QProgressDialog {
+
+    background-color: #151820;
+
+}
+
+
+QProgressBar {
+
+    background-color: #202633;
+
+    border: none;
+
+    border-radius: 6px;
+
+    height: 10px;
+
+    text-align: center;
+
+}
+
+
+QProgressBar::chunk {
+
+    background-color: #5B8CFF;
+
+    border-radius: 6px;
+
+}
+
+
+/* ==========================================================
+   Light Theme Overrides
+   ========================================================== */
+
+.light QDialog {
+
+    background-color: #FFFFFF;
+
+}
+
+
+.light QDialog QLabel {
+
+    color: #1F2937;
+
+}
+
+
+.light #DialogContainer {
+
+    background-color: #FFFFFF;
+
+    border-color: #E5E7EB;
+
+}
+
+
+.light QMessageBox {
+
+    background-color: #FFFFFF;
+
+}
+
+
+.light QMessageBox QLabel {
+
+    color: #1F2937;
+
+}
+
+
+.light QInputDialog QLineEdit {
+
+    background-color: #FFFFFF;
+
+    color: #111827;
+
+    border-color: #D1D5DB;
+
+}
+
+
+/* ==========================================================
+   Accessibility
+   ========================================================== */
+
+QDialog QPushButton:focus {
+
+    border: 2px solid #5B8CFF;
+
+}
+
+
+QDialog QPushButton:disabled {
+
+    color: #6B7280;
+
+}

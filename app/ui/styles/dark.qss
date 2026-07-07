@@ -1,0 +1,779 @@
+/*
+Nova AI Desktop Assistant
+-------------------------
+
+Dark Theme Stylesheet
+
+Modern dark UI inspired by:
+- ChatGPT Desktop
+- Cursor IDE
+- Windows Copilot
+- Arc Browser
+
+Scope:
+- Global application styling
+- Main containers
+- Navigation
+- Buttons
+- Inputs
+- Cards
+*/
+
+
+/* ==========================================================
+   Global
+   ========================================================== */
+
+* {
+    font-family: "Segoe UI";
+    font-size: 14px;
+}
+
+
+QMainWindow,
+QWidget {
+    background-color: #111318;
+    color: #E8EAED;
+}
+
+
+QLabel {
+    color: #E8EAED;
+}
+
+
+/* ==========================================================
+   Scroll Areas
+   ========================================================== */
+
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+
+QScrollBar:vertical {
+    width: 8px;
+    background: transparent;
+}
+
+
+QScrollBar::handle:vertical {
+    background: #3A3F4B;
+    border-radius: 4px;
+    min-height: 40px;
+}
+
+
+QScrollBar::handle:vertical:hover {
+    background: #5B8CFF;
+}
+
+
+QScrollBar::add-line,
+QScrollBar::sub-line {
+    height: 0;
+}
+
+
+/* ==========================================================
+   Main Window
+   ========================================================== */
+
+#MainWindow {
+    background-color: #111318;
+}
+
+
+/* ==========================================================
+   Title Bar
+   ========================================================== */
+
+#TitleBar {
+
+    background-color: #151820;
+
+    border-bottom: 1px solid #242936;
+
+}
+
+
+#WindowTitle {
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: #FFFFFF;
+
+}
+
+
+/* ==========================================================
+   Sidebar
+   ========================================================== */
+
+#Sidebar {
+
+    background-color: #151820;
+
+    border-right: 1px solid #242936;
+
+}
+
+
+#SidebarLogo {
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    color: #FFFFFF;
+
+}
+
+
+#SidebarButton {
+
+    background-color: transparent;
+
+    border: none;
+
+    border-radius: 10px;
+
+    padding: 10px;
+
+    color: #B7BCC7;
+
+    text-align: left;
+
+}
+
+
+#SidebarButton:hover {
+
+    background-color: #202633;
+
+    color: #FFFFFF;
+
+}
+
+
+#SidebarButton:checked {
+
+    background-color: #263A66;
+
+    color: #FFFFFF;
+
+}
+
+
+/* ==========================================================
+   Navigation Rail
+   ========================================================== */
+
+#NavigationRail {
+
+    background-color: #151820;
+
+    border-right: 1px solid #242936;
+
+}
+
+
+#NavigationRailButton {
+
+    background-color: transparent;
+
+    border: none;
+
+    border-radius: 12px;
+
+}
+
+
+#NavigationRailButton:hover {
+
+    background-color: #202633;
+
+}
+
+
+#NavigationRailButton:checked {
+
+    background-color: #263A66;
+
+}
+
+/* ==========================================================
+   Buttons
+   ========================================================== */
+
+QPushButton {
+
+    background-color: #202633;
+
+    color: #E8EAED;
+
+    border: 1px solid #2D3442;
+
+    border-radius: 8px;
+
+    padding: 8px 14px;
+
+}
+
+
+QPushButton:hover {
+
+    background-color: #2A3242;
+
+    border-color: #5B8CFF;
+
+}
+
+
+QPushButton:pressed {
+
+    background-color: #18202D;
+
+}
+
+
+QPushButton:disabled {
+
+    background-color: #171A20;
+
+    color: #6F7480;
+
+}
+
+
+/* Close button */
+
+#CloseButton:hover {
+
+    background-color: #D64545;
+
+    color: white;
+
+}
+
+
+/* ==========================================================
+   Input Fields
+   ========================================================== */
+
+QLineEdit {
+
+    background-color: #181C24;
+
+    border: 1px solid #303746;
+
+    border-radius: 10px;
+
+    padding: 10px 12px;
+
+    color: #FFFFFF;
+
+}
+
+
+QLineEdit:focus {
+
+    border: 1px solid #5B8CFF;
+
+}
+
+
+QLineEdit::placeholder {
+
+    color: #8B919D;
+
+}
+
+
+/* ==========================================================
+   Search Bar
+   ========================================================== */
+
+#SearchBar {
+
+    background-color: #181C24;
+
+    border-radius: 12px;
+
+    border: 1px solid #303746;
+
+}
+
+
+/* ==========================================================
+   Chat
+   ========================================================== */
+
+#UserBubble {
+
+    background-color: #263A66;
+
+    border-radius: 16px;
+
+}
+
+
+#AssistantBubble {
+
+    background-color: #1A1F28;
+
+    border-radius: 16px;
+
+}
+
+
+#BubbleContainer {
+
+    border-radius: 16px;
+
+}
+
+
+QTextBrowser {
+
+    background-color: transparent;
+
+    color: #E8EAED;
+
+}
+
+
+/* ==========================================================
+   Cards
+   ========================================================== */
+
+#BaseCard {
+
+    background-color: #181C24;
+
+    border: 1px solid #292F3B;
+
+    border-radius: 16px;
+
+}
+
+
+#BaseCard:hover {
+
+    border-color: #5B8CFF;
+
+}
+
+
+#CardTitle {
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    color: #FFFFFF;
+
+}
+
+
+#CardDescription {
+
+    color: #A8AFBC;
+
+}
+
+
+/* ==========================================================
+   Status Widget
+   ========================================================== */
+
+#StatusWidget {
+
+    background-color: #181C24;
+
+    border-radius: 12px;
+
+}
+
+
+#StatusText {
+
+    color: #DCE1EA;
+
+}
+
+
+/* ==========================================================
+   Toast
+   ========================================================== */
+
+#Toast {
+
+    background-color: #181C24;
+
+    border: 1px solid #303746;
+
+    border-radius: 12px;
+
+}
+
+
+/* ==========================================================
+   Loading Indicator
+   ========================================================== */
+
+#LoadingIndicator {
+
+    background-color: transparent;
+
+}
+
+
+#LoadingText {
+
+    color: #B7BCC7;
+
+}
+
+
+/* ==========================================================
+   Pages
+   ========================================================== */
+
+#HomePage,
+#ChatPage,
+#BrowserPage,
+#FilesPage,
+#MusicPage,
+#SettingsPage,
+#HistoryPage,
+#AboutPage {
+
+    background-color: #111318;
+
+}
+
+
+#PageTitle {
+
+    font-size: 28px;
+
+    font-weight: 700;
+
+    color: #FFFFFF;
+
+}
+
+
+#PageSubtitle {
+
+    font-size: 15px;
+
+    color: #A8AFBC;
+
+}
+
+
+#SectionTitle {
+
+    font-size: 18px;
+
+    font-weight: 600;
+
+    color: #FFFFFF;
+
+}
+
+/* ==========================================================
+   Browser
+   ========================================================== */
+
+#BrowserFrame {
+
+    background-color: #181C24;
+
+    border: 1px solid #292F3B;
+
+    border-radius: 14px;
+
+}
+
+
+#BrowserFrame QLabel {
+
+    color: #A8AFBC;
+
+}
+
+
+/* ==========================================================
+   Files Page
+   ========================================================== */
+
+QListWidget {
+
+    background-color: #181C24;
+
+    border: 1px solid #292F3B;
+
+    border-radius: 12px;
+
+    padding: 8px;
+
+    outline: none;
+
+}
+
+
+QListWidget::item {
+
+    padding: 10px;
+
+    border-radius: 8px;
+
+}
+
+
+QListWidget::item:hover {
+
+    background-color: #202633;
+
+}
+
+
+QListWidget::item:selected {
+
+    background-color: #263A66;
+
+    color: #FFFFFF;
+
+}
+
+
+QTextEdit {
+
+    background-color: #181C24;
+
+    border: 1px solid #292F3B;
+
+    border-radius: 12px;
+
+    color: #E8EAED;
+
+    padding: 12px;
+
+}
+
+
+/* ==========================================================
+   Music Page
+   ========================================================== */
+
+#MusicPage QPushButton {
+
+    min-width: 40px;
+
+    min-height: 40px;
+
+}
+
+
+#MusicPage QLabel {
+
+    color: #FFFFFF;
+
+}
+
+
+QSlider::groove:horizontal {
+
+    height: 6px;
+
+    background-color: #303746;
+
+    border-radius: 3px;
+
+}
+
+
+QSlider::handle:horizontal {
+
+    width: 14px;
+
+    margin: -5px 0;
+
+    background-color: #5B8CFF;
+
+    border-radius: 7px;
+
+}
+
+
+/* ==========================================================
+   Settings
+   ========================================================== */
+
+#SettingsSection {
+
+    background-color: #181C24;
+
+    border: 1px solid #292F3B;
+
+    border-radius: 14px;
+
+    padding: 12px;
+
+}
+
+
+QComboBox {
+
+    background-color: #181C24;
+
+    border: 1px solid #303746;
+
+    border-radius: 8px;
+
+    padding: 8px;
+
+    color: #FFFFFF;
+
+}
+
+
+QComboBox:hover {
+
+    border-color: #5B8CFF;
+
+}
+
+
+QComboBox QAbstractItemView {
+
+    background-color: #181C24;
+
+    color: #FFFFFF;
+
+    selection-background-color: #263A66;
+
+}
+
+
+/* ==========================================================
+   Checkboxes
+   ========================================================== */
+
+QCheckBox {
+
+    color: #E8EAED;
+
+}
+
+
+QCheckBox::indicator {
+
+    width: 18px;
+
+    height: 18px;
+
+}
+
+
+QCheckBox::indicator:unchecked {
+
+    border: 1px solid #5A6272;
+
+    border-radius: 4px;
+
+}
+
+
+QCheckBox::indicator:checked {
+
+    background-color: #5B8CFF;
+
+    border-radius: 4px;
+
+}
+
+
+/* ==========================================================
+   Dialog Support
+   ========================================================== */
+
+QDialog {
+
+    background-color: #151820;
+
+    color: #FFFFFF;
+
+}
+
+
+QDialog QLabel {
+
+    color: #FFFFFF;
+
+}
+
+
+/* ==========================================================
+   Tooltips
+   ========================================================== */
+
+QToolTip {
+
+    background-color: #202633;
+
+    color: #FFFFFF;
+
+    border: 1px solid #303746;
+
+    padding: 6px;
+
+    border-radius: 6px;
+
+}
+
+
+/* ==========================================================
+   Splitter
+   ========================================================== */
+
+QSplitter::handle {
+
+    background-color: #303746;
+
+}
+
+
+QSplitter::handle:hover {
+
+    background-color: #5B8CFF;
+
+}
+
+
+/* ==========================================================
+   Generic Frames
+   ========================================================== */
+
+QFrame {
+
+    background-color: transparent;
+
+}
+
+
+/* ==========================================================
+   Accessibility Focus
+   ========================================================== */
+
+QWidget:focus {
+
+    outline: none;
+
+}

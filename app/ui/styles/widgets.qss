@@ -1,0 +1,581 @@
+/*
+Nova AI Desktop Assistant
+-------------------------
+
+Reusable Widgets Stylesheet
+
+Contains styling for:
+- Cards
+- Chat bubbles
+- Toasts
+- Search bars
+- Loading widgets
+- Status widgets
+- Microphone
+- Waveform
+- Custom controls
+*/
+
+
+/* ==========================================================
+   Base Widget Containers
+   ========================================================== */
+
+#BaseCard,
+#Toast,
+#StatusWidget,
+#SearchBar,
+#LoadingIndicator {
+
+    background-color: transparent;
+
+}
+
+
+/* ==========================================================
+   Card Widgets
+   ========================================================== */
+
+#BaseCard {
+
+    border-radius: 16px;
+
+    padding: 8px;
+
+}
+
+
+#BaseCard:hover {
+
+    background-color: rgba(91, 140, 255, 0.08);
+
+}
+
+
+#CardActionButton {
+
+    min-width: 80px;
+
+    border-radius: 8px;
+
+}
+
+
+#CardTitle {
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+}
+
+
+#CardDescription {
+
+    font-size: 13px;
+
+}
+
+
+/* ==========================================================
+   Search Widget
+   ========================================================== */
+
+#SearchBar {
+
+    border-radius: 12px;
+
+}
+
+
+#SearchBar QPushButton {
+
+    background-color: transparent;
+
+    border: none;
+
+    padding: 4px;
+
+}
+
+
+#SearchBar QPushButton:hover {
+
+    background-color: rgba(
+        91,
+        140,
+        255,
+        0.12
+    );
+
+}
+
+
+#SearchBar QLineEdit {
+
+    border: none;
+
+    background: transparent;
+
+}
+
+
+/* ==========================================================
+   Chat Bubble
+   ========================================================== */
+
+#UserBubble,
+#AssistantBubble {
+
+    padding: 10px;
+
+}
+
+
+#UserBubble QTextBrowser,
+#AssistantBubble QTextBrowser {
+
+    border: none;
+
+    background: transparent;
+
+}
+
+
+#UserBubble QLabel,
+#AssistantBubble QLabel {
+
+    font-size: 12px;
+
+}
+
+
+/* ==========================================================
+   Status Widget
+   ========================================================== */
+
+#StatusWidget {
+
+    min-height: 40px;
+
+    border-radius: 12px;
+
+}
+
+
+#StatusText {
+
+    font-weight: 500;
+
+}
+
+
+/* ==========================================================
+   Toast Widget
+   ========================================================== */
+
+#ToastMessage {
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+}
+
+
+#Toast QPushButton {
+
+    border: none;
+
+    background: transparent;
+
+}
+
+
+#Toast QPushButton:hover {
+
+    background-color: rgba(
+        255,
+        255,
+        255,
+        0.1
+    );
+
+    border-radius: 6px;
+
+}
+
+/* ==========================================================
+   Loading Indicator
+   ========================================================== */
+
+#LoadingIndicator {
+
+    background-color: transparent;
+
+}
+
+
+#LoadingText {
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+}
+
+
+/* ==========================================================
+   Microphone Widget
+   ========================================================== */
+
+#MicrophoneWidget {
+
+    background-color: transparent;
+
+}
+
+
+#MicrophoneWidget:hover {
+
+    background-color: rgba(
+        91,
+        140,
+        255,
+        0.08
+    );
+
+    border-radius: 50%;
+
+}
+
+
+/* ==========================================================
+   Waveform Widget
+   ========================================================== */
+
+#WaveformWidget {
+
+    background-color: transparent;
+
+}
+
+
+#WaveformWidget QLabel {
+
+    background-color: transparent;
+
+}
+
+
+/* ==========================================================
+   Navigation Buttons
+   ========================================================== */
+
+#SidebarButton,
+#NavigationRailButton {
+
+    transition: background-color 150ms;
+
+}
+
+
+#SidebarButton:hover,
+#NavigationRailButton:hover {
+
+    background-color: rgba(
+        91,
+        140,
+        255,
+        0.10
+    );
+
+}
+
+
+#SidebarButton:checked,
+#NavigationRailButton:checked {
+
+    background-color: rgba(
+        91,
+        140,
+        255,
+        0.18
+    );
+
+}
+
+
+/* ==========================================================
+   Title Bar Controls
+   ========================================================== */
+
+#TitleBar QPushButton {
+
+    background-color: transparent;
+
+    border: none;
+
+    border-radius: 8px;
+
+    min-width: 32px;
+
+    min-height: 28px;
+
+}
+
+
+#TitleBar QPushButton:hover {
+
+    background-color: rgba(
+        128,
+        128,
+        128,
+        0.15
+    );
+
+}
+
+
+#TitleBar #CloseButton:hover {
+
+    background-color: #E81123;
+
+    color: white;
+
+}
+
+
+/* ==========================================================
+   Action Buttons
+   ========================================================== */
+
+#CardActionButton {
+
+    padding-left: 14px;
+
+    padding-right: 14px;
+
+}
+
+
+#CardActionButton:hover {
+
+    background-color: rgba(
+        91,
+        140,
+        255,
+        0.15
+    );
+
+}
+
+
+/* ==========================================================
+   File Preview
+   ========================================================== */
+
+#FilesPage QTextEdit {
+
+    font-size: 14px;
+
+    line-height: 1.4;
+
+}
+
+
+/* ==========================================================
+   Browser Controls
+   ========================================================== */
+
+#BrowserPage QPushButton {
+
+    min-width: 36px;
+
+    min-height: 36px;
+
+}
+
+
+#BrowserPage QPushButton:hover {
+
+    border-radius: 8px;
+
+}
+
+
+/* ==========================================================
+   Music Controls
+   ========================================================== */
+
+#MusicPage QPushButton {
+
+    border-radius: 20px;
+
+}
+
+
+#MusicPage QPushButton:hover {
+
+    background-color: rgba(
+        91,
+        140,
+        255,
+        0.15
+    );
+
+}
+
+/* ==========================================================
+   Settings Controls
+   ========================================================== */
+
+#SettingsPage QFrame {
+
+    border-radius: 14px;
+
+}
+
+
+#SettingsPage QLabel {
+
+    font-size: 14px;
+
+}
+
+
+#SettingsPage QPushButton {
+
+    min-height: 34px;
+
+}
+
+
+/* ==========================================================
+   History Controls
+   ========================================================== */
+
+#HistoryPage QListWidget {
+
+    border-radius: 12px;
+
+}
+
+
+#HistoryPage QListWidget::item {
+
+    margin: 2px;
+
+    padding: 8px;
+
+}
+
+
+#HistoryPage QTextEdit {
+
+    border-radius: 12px;
+
+}
+
+
+/* ==========================================================
+   About Page
+   ========================================================== */
+
+#AboutPage QTextBrowser {
+
+    border-radius: 12px;
+
+}
+
+
+#AboutPage QPushButton {
+
+    min-width: 100px;
+
+}
+
+
+/* ==========================================================
+   Dialog Buttons
+   ========================================================== */
+
+QDialogButtonBox QPushButton {
+
+    min-width: 90px;
+
+    min-height: 34px;
+
+}
+
+
+/* ==========================================================
+   Disabled State
+   ========================================================== */
+
+QWidget:disabled {
+
+    opacity: 0.6;
+
+}
+
+
+/* ==========================================================
+   Focus States
+   ========================================================== */
+
+QPushButton:focus,
+QLineEdit:focus,
+QComboBox:focus {
+
+    border-color: #5B8CFF;
+
+}
+
+
+/* ==========================================================
+   Animatable Hover Layer
+   ========================================================== */
+
+QPushButton,
+QFrame {
+
+    selection-background-color: transparent;
+
+}
+
+
+/* ==========================================================
+   Compact Mode Support
+   ========================================================== */
+
+.compact QPushButton {
+
+    padding: 6px 10px;
+
+}
+
+
+.compact QLabel {
+
+    font-size: 13px;
+
+}
+
+
+/* ==========================================================
+   High Contrast Support
+   ========================================================== */
+
+.high-contrast QLabel {
+
+    font-weight: 600;
+
+}
+
+
+.high-contrast QPushButton {
+
+    border-width: 2px;
+
+}

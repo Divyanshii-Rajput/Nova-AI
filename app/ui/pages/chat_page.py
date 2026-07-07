@@ -37,8 +37,10 @@ from app.ui.constants import (
 
 from app.ui.resources import resources
 from app.ui.widgets.chat_bubble import ChatBubble
+from app.ui.widgets.microphone_widget import MicrophoneWidget
 
 from app.services.assistant_bridge import AssistantBridge
+from app.services.voice_bridge import VoiceBridge
 
 
 class ChatPage(QWidget):
@@ -60,7 +62,8 @@ class ChatPage(QWidget):
         )
 
         self.bridge = AssistantBridge()
-
+        self.voiceBridge = VoiceBridge()
+        
         self.bridge.response_ready.connect(
             self._on_response
         )
@@ -71,6 +74,18 @@ class ChatPage(QWidget):
 
         self.bridge.processing_finished.connect(
             lambda: self.set_input_enabled(True)
+        )
+        
+        self.voiceBridge.speech_recognized.connect(
+            self._on_voice_text
+        )
+
+        self.voiceBridge.listening_started.connect(
+            lambda: self.microphone.setListening(True)
+        )
+
+        self.voiceBridge.listening_finished.connect(
+            lambda: self.microphone.reset()
         )
 
         self._build_ui()
@@ -131,6 +146,15 @@ class ChatPage(QWidget):
             SPACE_12
         )
 
+        self.microphone = MicrophoneWidget()
+
+        self.microphone.clicked.connect(
+            self.voiceBridge.listen
+        )
+
+        inputRow.addWidget(
+            self.microphone
+        )
 
         self.messageEdit = QLineEdit()
 
@@ -209,7 +233,17 @@ class ChatPage(QWidget):
             message
         )
 
+    def _on_voice_text(
+        self,
+        text: str,
+    ) -> None:
 
+        self.messageEdit.setText(
+            text
+        )
+
+        self._send_message()
+        
     def _on_response(
         self,
         response: str,

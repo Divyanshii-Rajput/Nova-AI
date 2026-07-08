@@ -22,6 +22,13 @@ class AssistantBridge(QObject):
 
     processing_finished = Signal()
 
+    command_executed = Signal(object, object)
+
+
+    speaking_started = Signal(str)
+
+    speaking_finished = Signal()
+
 
     def __init__(self):
 
@@ -76,6 +83,13 @@ class AssistantBridge(QObject):
         )
 
         print("History size:", len(self.memory.all()))
+        
+        self.command_executed.emit(command, response)
+
+        # Centralized speaking for all assistant responses
+        self.speaking_started.emit(reply)
+        self.assistant.speaker.speak(reply)
+        self.speaking_finished.emit()
         
         return reply
 

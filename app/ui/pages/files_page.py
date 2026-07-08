@@ -365,6 +365,33 @@ class FilesPage(QWidget):
 
         self.preview.clear()
 
+    def refresh(self) -> None:
+        """
+        Refresh recently opened files from memory.
+        """
+        self.clear_files()
+        from app.memory.conversation_memory import conversation_memory
+        for conv in conversation_memory.all():
+            user_text = conv.user.lower().strip()
+            assistant_text = conv.assistant.lower()
+            if (
+                "open" in user_text
+                and ("opened" in assistant_text or "file" in assistant_text or "folder" in assistant_text or ".pdf" in assistant_text)
+            ):
+                display_text = conv.user
+                item = QListWidgetItem(f"{conv.timestamp.strftime('%H:%M:%S')} - {display_text} -> {conv.assistant}")
+                
+                # Extract query term to match file entries
+                search_query = user_text.replace("open", "").strip()
+                import re
+                search_query = re.sub(r"[^\w\s\.-]", "", search_query).strip()
+                if search_query:
+                    file_entry = self.engine.best_match(search_query)
+                    if file_entry:
+                        item.setData(Qt.ItemDataRole.UserRole, file_entry)
+                        
+                self.fileList.addItem(item)
+
     # ======================================================
     # Utilities
     # ======================================================

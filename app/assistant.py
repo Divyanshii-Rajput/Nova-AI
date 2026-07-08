@@ -211,7 +211,7 @@ class Assistant:
     ) -> str | None:
 
         print()
-        print("🎤 Listening...")
+        print("[Listening...]")
         print()
 
         try:
@@ -263,7 +263,7 @@ class Assistant:
     ) -> None:
 
         print("=" * 60)
-        print("🚀 Nova AI Started")
+        print("Nova AI Started")
         print("=" * 60)
 
         logger.info(
@@ -279,7 +279,7 @@ class Assistant:
     ) -> None:
 
         print()
-        print("👋 Goodbye!")
+        print("Goodbye!")
         print()
 
         logger.info(

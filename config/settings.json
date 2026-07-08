@@ -1,0 +1,8 @@
+{
+    "theme": "System",
+    "startup": false,
+    "voice": "Male",
+    "volume": 75,
+    "model": "Gemini",
+    "temperature": 50
+}

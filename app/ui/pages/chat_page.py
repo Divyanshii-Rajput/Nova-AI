@@ -28,6 +28,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from app.services.assistant_bridge import AssistantBridge
+from app.services.voice_controller import VoiceController
 from app.ui.constants import (
     CHAT_INPUT_HEIGHT,
     PAGE_SPACING,
@@ -39,10 +41,6 @@ from app.ui.resources import resources
 from app.ui.widgets.chat_bubble import ChatBubble
 from app.ui.widgets.microphone_widget import MicrophoneWidget
 
-from app.services.assistant_bridge import AssistantBridge
-from app.services.voice_bridge import VoiceBridge
-
-
 class ChatPage(QWidget):
     """
     Main chat interface.
@@ -52,43 +50,23 @@ class ChatPage(QWidget):
 
     def __init__(
         self,
-        parent: QWidget | None = None,
-    ) -> None:
+        assistant_bridge: AssistantBridge,
+        voice_controller: VoiceController,
+        parent=None,
+    ):
 
         super().__init__(parent)
 
         self.setObjectName(
             "ChatPage"
         )
-
-        self.bridge = AssistantBridge()
-        self.voiceBridge = VoiceBridge()
         
-        self.bridge.response_ready.connect(
-            self._on_response
-        )
-
-        self.bridge.processing_started.connect(
-            lambda: self.set_input_enabled(False)
-        )
-
-        self.bridge.processing_finished.connect(
-            lambda: self.set_input_enabled(True)
-        )
-        
-        self.voiceBridge.speech_recognized.connect(
-            self._on_voice_text
-        )
-
-        self.voiceBridge.listening_started.connect(
-            lambda: self.microphone.setListening(True)
-        )
-
-        self.voiceBridge.listening_finished.connect(
-            lambda: self.microphone.reset()
-        )
+        self.bridge = assistant_bridge
+        self.voice_controller = voice_controller
 
         self._build_ui()
+
+        self._connect_signals()
 
     # ======================================================
     # UI
@@ -149,7 +127,7 @@ class ChatPage(QWidget):
         self.microphone = MicrophoneWidget()
 
         self.microphone.clicked.connect(
-            self.voiceBridge.listen
+            self._toggle_voice
         )
 
         inputRow.addWidget(
@@ -200,6 +178,37 @@ class ChatPage(QWidget):
             inputRow
         )
 
+    def _connect_signals(self) -> None:
+
+        # -----------------------------
+        # AssistantBridge
+        # -----------------------------
+
+        self.bridge.response_ready.connect(
+            self._on_response
+        )
+
+        self.bridge.processing_started.connect(
+            lambda: self.set_input_enabled(False)
+        )
+
+        self.bridge.processing_finished.connect(
+            lambda: self.set_input_enabled(True)
+        )
+
+        # -----------------------------
+        # VoiceController
+        # -----------------------------
+
+        self.voice_controller.command_recognized.connect(
+            self._on_voice_text
+        )
+
+        self.voice_controller.state_changed.connect(
+            self._on_voice_state_changed
+        )
+
+
 
     # ======================================================
     # Messaging
@@ -232,17 +241,45 @@ class ChatPage(QWidget):
         self.bridge.process_message(
             message
         )
+    
+    def _toggle_voice(self):
 
+        if self.voice_controller.is_running():
+
+            self.voice_controller.stop()
+
+        else:
+
+            self.voice_controller.start()
+            
     def _on_voice_text(
         self,
         text: str,
     ) -> None:
 
-        self.messageEdit.setText(
-            text
-        )
+        self.messageEdit.setText(text)
 
-        self._send_message()
+        self.messageEdit.returnPressed.emit()
+
+    def _on_voice_state_changed(self, state: str) -> None:
+        """
+        Animate microphone widget based on voice controller state.
+        """
+        if state == "Listening...":
+            self.microphone.setListening(True)
+            self.microphone.setThinking(False)
+            self.microphone.setSpeaking(False)
+        elif state == "Thinking...":
+            self.microphone.setListening(False)
+            self.microphone.setThinking(True)
+            self.microphone.setSpeaking(False)
+        elif state == "Speaking...":
+            self.microphone.setListening(False)
+            self.microphone.setThinking(False)
+            self.microphone.setSpeaking(True)
+        else:
+            self.microphone.reset()
+
         
     def _on_response(
         self,

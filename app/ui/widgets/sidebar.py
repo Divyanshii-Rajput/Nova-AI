@@ -158,7 +158,7 @@ class Sidebar(QFrame):
 
             NavigationItem(
                 HOME_PAGE,
-                "Home",
+                "Assistant",
                 "fa6s.house",
             ),
 
@@ -169,9 +169,9 @@ class Sidebar(QFrame):
             ),
 
             NavigationItem(
-                BROWSER_PAGE,
-                "Browser",
-                "fa6s.globe",
+                HISTORY_PAGE,
+                "History",
+                "fa6s.clock-rotate-left",
             ),
 
             NavigationItem(
@@ -181,15 +181,15 @@ class Sidebar(QFrame):
             ),
 
             NavigationItem(
-                MUSIC_PAGE,
-                "Music",
-                "fa6s.music",
+                BROWSER_PAGE,
+                "Browser",
+                "fa6s.globe",
             ),
 
             NavigationItem(
-                HISTORY_PAGE,
-                "History",
-                "fa6s.clock-rotate-left",
+                MUSIC_PAGE,
+                "Music",
+                "fa6s.music",
             ),
         ]
 

@@ -140,6 +140,8 @@ class EntityExtractor:
         "directory ",
         "file ",
         "document ",
+        "notes ",
+        "note ",
     )
 
     POLITE_PHRASES = (

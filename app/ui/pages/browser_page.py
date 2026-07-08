@@ -24,6 +24,8 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QListWidget,
+    QListWidgetItem,
     QPushButton,
     QSizePolicy,
     QVBoxLayout,
@@ -58,6 +60,8 @@ class BrowserPage(QWidget):
     homeRequested = Signal()
 
     urlRequested = Signal(str)
+
+    search_completed = Signal()
 
     def __init__(
         self,
@@ -192,8 +196,6 @@ class BrowserPage(QWidget):
             Qt.AlignmentFlag.AlignCenter
         )
 
-        content.addStretch()
-
         content.addWidget(
             self.placeholder
         )
@@ -211,7 +213,23 @@ class BrowserPage(QWidget):
             alignment=Qt.AlignmentFlag.AlignCenter,
         )
 
-        content.addStretch()
+        # Browsing History Section
+        self.historyLabel = QLabel("Browsing History")
+        self.historyLabel.setObjectName("SectionTitle")
+        self.historyLabel.setStyleSheet("font-size: 14px; font-weight: bold; color: #5B8CFF; margin-top: 15px;")
+        content.addWidget(self.historyLabel)
+
+        self.historyList = QListWidget()
+        self.historyList.setStyleSheet("""
+            QListWidget {
+                background-color: #151820;
+                border: 1px solid #242936;
+                border-radius: 8px;
+                color: #E8EAED;
+                padding: 5px;
+            }
+        """)
+        content.addWidget(self.historyList)
 
         root.addWidget(
             self.browserFrame
@@ -240,7 +258,17 @@ class BrowserPage(QWidget):
         self.searchBar.searchRequested.connect(
             self._search
         )
+
+        self.historyList.itemClicked.connect(
+            self._on_history_item_clicked
+        )
     
+    def _on_history_item_clicked(self, item: QListWidgetItem) -> None:
+        query = item.data(Qt.ItemDataRole.UserRole)
+        if query:
+            self.searchBar.setText(query)
+            self._search(query)
+
     def _search(
         self,
         text: str,
@@ -272,6 +300,15 @@ class BrowserPage(QWidget):
         )
 
         self.set_loading(False)
+
+        # Log manual browser search/navigation into conversation memory
+        from app.memory.conversation_memory import conversation_memory
+        conversation_memory.add(
+            user=f"Search Browser: {text}",
+            assistant=response.message,
+        )
+
+        self.search_completed.emit()
     
     # ======================================================
     # Public API
@@ -332,6 +369,29 @@ class BrowserPage(QWidget):
         self.refreshButton.setEnabled(enabled)
         self.homeButton.setEnabled(enabled)
         self.searchBar.setEnabled(enabled)
+
+    def refresh(self) -> None:
+        """
+        Refresh browsing history list from memory.
+        """
+        self.historyList.clear()
+        from app.memory.conversation_memory import conversation_memory
+        for conv in conversation_memory.all():
+            user_text = conv.user.lower().strip()
+            # Recognize "Search Browser:", "open", "search" or websites
+            if (
+                "search" in user_text
+                or "google" in user_text
+                or "search" in conv.assistant.lower()
+                or any(w in user_text for w in ["youtube", "leetcode", "whatsapp", ".com", ".org", ".net"])
+            ):
+                display_text = conv.user
+                if display_text.startswith("Search Browser:"):
+                    display_text = display_text[len("Search Browser:"):].strip()
+                item_text = f"{conv.timestamp.strftime('%H:%M:%S')} - {display_text} -> {conv.assistant}"
+                item = QListWidgetItem(item_text)
+                item.setData(Qt.ItemDataRole.UserRole, display_text)
+                self.historyList.addItem(item)
 
     def clear(self) -> None:
         """

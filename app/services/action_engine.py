@@ -53,6 +53,9 @@ class ActionEngine:
         # Aliases for Control Panel (e.g. "CP", "CPC")
         "cp": "control",
         "cpc": "control",
+        "vs code": "code",
+        "vscode": "code",
+        "visual studio code": "code",
     }
 
     def __init__(self) -> None:
@@ -122,14 +125,38 @@ class ActionEngine:
         if not entity:
             return Response(success=False, message="Which application should I open?")
 
+        # Fuzzy match websites first to make website opening highly tolerant
+        import difflib
+        web_matches = difflib.get_close_matches(entity, ["youtube", "leetcode", "whatsapp"], n=1, cutoff=0.75)
+        if web_matches:
+            matched_web = web_matches[0]
+            logger.info("Fuzzy matched website entity from '%s' to '%s'", entity, matched_web)
+            entity = matched_web
+
         # Handle common websites explicitly
         if "youtube" in entity:
-            # Open YouTube homepage
             logger.info("Launching YouTube website")
             return self.browser.open_website("youtube.com")
         if "leetcode" in entity:
             logger.info("Launching LeetCode website")
             return self.browser.open_website("leetcode.com")
+        if "whatsapp" in entity:
+            logger.info("Launching WhatsApp app with protocol")
+            try:
+                import subprocess
+                subprocess.Popen("start whatsapp:", shell=True)
+                return Response(success=True, message="Opened WhatsApp.")
+            except Exception:
+                logger.warning("WhatsApp protocol failed, falling back to Web WhatsApp")
+                return self.browser.open_website("web.whatsapp.com")
+
+        # Fuzzy match built-in Windows apps to make app launching spelling-tolerant
+        app_keys = list(self.WINDOWS_APPS.keys())
+        app_matches = difflib.get_close_matches(entity, app_keys, n=1, cutoff=0.55)
+        if app_matches:
+            matched_app = app_matches[0]
+            logger.info("Fuzzy matched app entity from '%s' to '%s'", entity, matched_app)
+            entity = matched_app
 
         # 1. Built-in Windows Apps
         if self._builtin(entity):
@@ -194,7 +221,16 @@ class ActionEngine:
         return self.browser.search_google(self._entity(command))
 
     def _handle_music(self, command: Command) -> Response:
-        return self.music.play(self._entity(command))
+        entity = self._entity(command)
+        platform = "youtube"
+        if "on spotify" in entity:
+            platform = "spotify"
+            entity = entity.replace("on spotify", "").strip()
+        elif "on youtube" in entity:
+            platform = "youtube"
+            entity = entity.replace("on youtube", "").strip()
+        return self.music.play(entity, platform=platform)
+
 
     def _handle_screenshot(self, command: Command) -> Response:
         try:

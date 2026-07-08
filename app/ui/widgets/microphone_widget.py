@@ -199,13 +199,13 @@ class MicrophoneWidget(QWidget):
         ) * self._scale
 
         if self._listening:
-            ring_color = QColor("#5B8CFF")
+            ring_color = QColor("#2ECC71") # Green
         elif self._speaking:
-            ring_color = QColor("#2ECC71")
+            ring_color = QColor("#5B8CFF") # Blue
         elif self._thinking:
-            ring_color = QColor("#F4B400")
+            ring_color = QColor("#F4B400") # Amber
         else:
-            ring_color = QColor("#7B8494")
+            ring_color = QColor("#7B8494") # Gray
 
         pen = QPen(ring_color, 3)
 

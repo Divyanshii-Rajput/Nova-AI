@@ -58,6 +58,8 @@ from app.ui.pages.music_page import MusicPage
 from app.ui.pages.history_page import HistoryPage
 from app.ui.pages.settings_page import SettingsPage
 from app.ui.pages.about_page import AboutPage
+from app.services.voice_controller import VoiceController
+from app.services.assistant_bridge import AssistantBridge
 
 logger = logging.getLogger(__name__)
 
@@ -72,17 +74,27 @@ class MainWindow(QMainWindow):
 
         self._central_widget = None
         self._main_layout = None
-
+        
         self._sidebar = None
         self._title_bar = None
 
         self._stack = None
 
+        # Shared assistant
+
+        self.assistant_bridge = AssistantBridge()
+
+        self.voice_controller = VoiceController()
+
+        self.voice_controller.set_assistant_bridge(
+            self.assistant_bridge
+        )
+        
         self._initialize_window()
         self._create_ui()
         self._register_pages()
         self._connect_signals()
-
+        
         navigation_manager.navigate(
             HOME_PAGE
         )
@@ -212,7 +224,10 @@ class MainWindow(QMainWindow):
 
             HOME_PAGE: HomePage(),
 
-            CHAT_PAGE: ChatPage(),
+            CHAT_PAGE: ChatPage(
+                self.assistant_bridge,
+                self.voice_controller,
+            ),
 
             BROWSER_PAGE: BrowserPage(),
 
@@ -266,6 +281,50 @@ class MainWindow(QMainWindow):
         ui_signals.close_requested.connect(
             self.close
         )
+        
+        home_page = self.pages[HOME_PAGE]
+
+        home_page.start_voice_requested.connect(
+            self.voice_controller.start
+        )
+        
+        home_page.stop_voice_requested.connect(
+            self.voice_controller.stop
+        )
+
+        self.voice_controller.state_changed.connect(
+            home_page.on_voice_state_changed
+        )
+
+        home_page.browserRequested.connect(
+            lambda: self.navigate(BROWSER_PAGE)
+        )
+        home_page.filesRequested.connect(
+            lambda: self.navigate(FILES_PAGE)
+        )
+        home_page.musicRequested.connect(
+            lambda: self.navigate(MUSIC_PAGE)
+        )
+
+        home_page.commandTriggered.connect(
+            self.assistant_bridge.process_message
+        )
+
+        self.assistant_bridge.command_executed.connect(
+            self._on_command_executed
+        )
+
+        browser_page = self.pages[BROWSER_PAGE]
+        music_page = self.pages[MUSIC_PAGE]
+
+        browser_page.search_completed.connect(
+            self._update_home_recent_activity
+        )
+        music_page.music_completed.connect(
+            self._update_home_recent_activity
+        )
+
+
 
 
     # ==========================================================
@@ -313,17 +372,72 @@ class MainWindow(QMainWindow):
                 page_id
             )
 
-        # Refresh history whenever user opens it
+        # Refresh pages whenever user opens them
         if page_id == HISTORY_PAGE:
 
             history_page = self.pages[HISTORY_PAGE]
 
             history_page.refresh()
 
+        elif page_id == BROWSER_PAGE:
+            self.pages[BROWSER_PAGE].refresh()
+
+        elif page_id == MUSIC_PAGE:
+            self.pages[MUSIC_PAGE].refresh()
+
+        elif page_id == FILES_PAGE:
+            self.pages[FILES_PAGE].refresh()
+
+        elif page_id == HOME_PAGE:
+            self._update_home_recent_activity()
+
         logger.info(
             "Current page: %s",
             page_id,
         )
+
+    def _update_home_recent_activity(self) -> None:
+        from app.memory.conversation_memory import conversation_memory
+        history = conversation_memory.all()
+        home_page = self.pages[HOME_PAGE]
+        if history:
+            last = history[0]
+            # Strip markdown bold or other styling from user/assistant text for home activity card clean display
+            import re
+            user_clean = re.sub(r"\*\*|`", "", last.user)
+            assistant_clean = re.sub(r"\*\*|`", "", last.assistant)
+            home_page.setRecentActivity(
+                f"Ran: {user_clean}\nResult: {assistant_clean}"
+            )
+        else:
+            home_page.setRecentActivity("No recent activity.")
+
+    def _on_command_executed(self, command: Any, response: Any) -> None:
+        from app.models.intent import Intent
+        
+        # 1. Update Home Page Recent Activity instantly
+        self._update_home_recent_activity()
+
+        # 2. Update specific sub-pages in real time
+        intent = command.intent
+        entity = command.entity or ""
+        
+        if intent == Intent.PLAY_MUSIC and response.success:
+            music_page = self.pages[MUSIC_PAGE]
+            music_page.set_track(entity.title(), "Playing on YouTube/Spotify")
+            music_page.add_track(entity.title())
+
+        elif intent in (Intent.SEARCH_WEB, Intent.OPEN_WEBSITE) and response.success:
+            browser_page = self.pages[BROWSER_PAGE]
+            browser_page.set_query(entity)
+            browser_page.set_placeholder_text(response.message)
+
+        elif intent == Intent.OPEN_APP and response.success:
+            if "youtube" in entity or "leetcode" in entity or "whatsapp" in entity:
+                browser_page = self.pages[BROWSER_PAGE]
+                browser_page.set_query(entity)
+                browser_page.set_placeholder_text(response.message)
+
 
 
     def _toggle_maximize(self) -> None:
@@ -344,6 +458,10 @@ class MainWindow(QMainWindow):
         event,
     ) -> None:
 
+        if self.voice_controller.is_running():
+
+            self.voice_controller.stop()
+        
         ui_signals.application_closing.emit()
 
         super().closeEvent(

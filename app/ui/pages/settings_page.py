@@ -63,6 +63,8 @@ class SettingsPage(QWidget):
         self.setObjectName("SettingsPage")
 
         self._build_ui()
+        self._load_settings_into_ui()
+
 
     # ======================================================
     # UI
@@ -302,8 +304,9 @@ class SettingsPage(QWidget):
         )
 
         self.saveButton.clicked.connect(
-            self.settingsChanged
+            self.save_settings_from_ui
         )
+
 
     # ======================================================
     # Public API
@@ -341,6 +344,53 @@ class SettingsPage(QWidget):
         self.temperature.setValue(50)
 
         self.resetRequested.emit()
+        self.save_settings_from_ui()
+
+    def _load_settings_into_ui(self) -> None:
+        from app.config.settings import Settings
+        Settings.load()
+
+        # Set Theme
+        theme_idx = self.themeCombo.findText(Settings.THEME)
+        if theme_idx >= 0:
+            self.themeCombo.setCurrentIndex(theme_idx)
+
+        # Set Startup
+        self.startupCheck.setChecked(Settings.STARTUP)
+
+        # Set Voice
+        voice_idx = self.voiceCombo.findText(Settings.VOICE)
+        if voice_idx >= 0:
+            self.voiceCombo.setCurrentIndex(voice_idx)
+
+        # Set Volume
+        self.volumeSlider.setValue(Settings.VOLUME)
+
+        # Set AI Model
+        model_idx = self.modelCombo.findText(Settings.MODEL)
+        if model_idx >= 0:
+            self.modelCombo.setCurrentIndex(model_idx)
+
+        # Set Temperature
+        self.temperature.setValue(Settings.TEMPERATURE)
+
+    def save_settings_from_ui(self) -> None:
+        from app.config.settings import Settings
+        
+        # Get values from UI
+        Settings.THEME = self.themeCombo.currentText()
+        Settings.STARTUP = self.startupCheck.isChecked()
+        Settings.VOICE = self.voiceCombo.currentText()
+        Settings.VOLUME = self.volumeSlider.value()
+        Settings.MODEL = self.modelCombo.currentText()
+        Settings.TEMPERATURE = self.temperature.value()
+
+        # Save to settings.json
+        Settings.save()
+        
+        # Emit signal to notify other components
+        self.settingsChanged.emit()
+
 
     # ======================================================
     # Utilities

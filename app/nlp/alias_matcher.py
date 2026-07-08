@@ -90,6 +90,7 @@ class AliasMatcher:
         "db ms": "dbms",
         "d b m s": "dbms",
         "dvms": "dbms",
+        "dpms": "dbms",
 
         # --------------------------------
         # Goodbye

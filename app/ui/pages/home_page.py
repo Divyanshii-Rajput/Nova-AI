@@ -4,25 +4,15 @@ Nova AI Desktop Assistant
 
 Home Page
 
-Landing page displayed after the application starts.
-
-Inspired by ChatGPT Desktop, Cursor IDE and Windows Copilot.
-
-Responsibilities
-----------------
-- Welcome section
-- Quick actions
-- Assistant status
-- Recent activity
-- Suggested tasks
+Modern, elegant, and minimal assistant dashboard experience.
 """
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+import re
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QFrame,
-    QGridLayout,
     QHBoxLayout,
     QLabel,
     QPushButton,
@@ -33,314 +23,374 @@ from PySide6.QtWidgets import (
 )
 
 from app.ui.constants import (
-    CARD_SPACING,
     PAGE_SPACING,
-    SPACE_16,
     SPACE_24,
-)
-from app.ui.widgets.cards import (
-    ActionCard,
-    CardData,
 )
 from app.ui.widgets.microphone_widget import (
     MicrophoneWidget,
 )
-from app.ui.widgets.status_widget import (
-    StatusWidget,
-)
-
 
 class HomePage(QWidget):
     """
-    Main landing page.
+    Assistant dashboard page.
     """
+
+    start_voice_requested = Signal()
+    stop_voice_requested = Signal()
+    browserRequested = Signal()
+    filesRequested = Signal()
+    musicRequested = Signal()
+    commandTriggered = Signal(str)
 
     def __init__(
         self,
         parent: QWidget | None = None,
     ) -> None:
-
         super().__init__(parent)
 
         self.setObjectName("HomePage")
+        self._voice_running = False
+        
+        # Backwards compatibility dummy status widget
+        self.statusWidget = QWidget()
 
         self._build_ui()
+        self.update_interaction_history()
 
     # ======================================================
     # UI
     # ======================================================
 
     def _build_ui(self) -> None:
-
         root = QVBoxLayout(self)
-
-        root.setContentsMargins(
-            SPACE_24,
-            SPACE_24,
-            SPACE_24,
-            SPACE_24,
-        )
-
+        root.setContentsMargins(SPACE_24, SPACE_24, SPACE_24, SPACE_24)
         root.setSpacing(PAGE_SPACING)
 
         scroll = QScrollArea()
-
         scroll.setWidgetResizable(True)
-
-        scroll.setFrameShape(
-            QFrame.Shape.NoFrame
-        )
-
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
         root.addWidget(scroll)
 
         container = QWidget()
-
         scroll.setWidget(container)
 
         layout = QVBoxLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(28)
+        layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
-        layout.setContentsMargins(
-            0,
-            0,
-            0,
-            0,
-        )
+        # --------------------------------------------------
+        # 1. Branding Header
+        # --------------------------------------------------
+        self.brand_title = QLabel("NOVA AI")
+        self.brand_title.setObjectName("PageTitle")
+        self.brand_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.brand_title)
 
-        layout.setSpacing(PAGE_SPACING)
+        self.brand_subtitle = QLabel("Your Intelligent Desktop Assistant")
+        self.brand_subtitle.setObjectName("PageSubtitle")
+        self.brand_subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.brand_subtitle)
 
-        # ==================================================
-        # Header
-        # ==================================================
+        layout.addSpacing(5)
 
-        title = QLabel(
-            "Welcome to Nova AI"
-        )
+        # --------------------------------------------------
+        # 2. Assistant Core (Status, Mic, Prompt)
+        # --------------------------------------------------
+        self.statusLabel = QLabel("⚪ Standby")
+        self.statusLabel.setStyleSheet("font-size: 15px; font-weight: bold; color: #7B8494;")
+        self.statusLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.statusLabel)
 
-        title.setObjectName(
-            "PageTitle"
-        )
+        self.microphone = MicrophoneWidget()
+        self.microphone.clicked.connect(self._toggle_voice)
+        layout.addWidget(self.microphone, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        layout.addWidget(title)
+        self.promptLabel = QLabel("How can I help today?")
+        self.promptLabel.setStyleSheet("font-size: 16px; font-weight: 500; color: #E8EAED;")
+        self.promptLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.promptLabel)
 
-        subtitle = QLabel(
-            "Your intelligent desktop assistant."
-        )
+        layout.addSpacing(10)
 
-        subtitle.setObjectName(
-            "PageSubtitle"
-        )
+        # --------------------------------------------------
+        # 3. Last Command & Response Container
+        # --------------------------------------------------
+        self.lastInteractionFrame = QFrame()
+        self.lastInteractionFrame.setObjectName("ActivityFrame")
+        self.lastInteractionFrame.setMinimumWidth(520)
+        self.lastInteractionFrame.setMaximumWidth(520)
+        self.lastInteractionFrame.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        self.lastInteractionFrame.setStyleSheet("""
+            #ActivityFrame {
+                background-color: #151820;
+                border: 1px solid #242936;
+                border-radius: 12px;
+            }
+        """)
+        interaction_layout = QVBoxLayout(self.lastInteractionFrame)
+        interaction_layout.setContentsMargins(18, 18, 18, 18)
+        interaction_layout.setSpacing(10)
 
-        layout.addWidget(subtitle)
+        self.lastCommandTitle = QLabel("LAST COMMAND")
+        self.lastCommandTitle.setStyleSheet("font-size: 11px; font-weight: bold; color: #5B8CFF; letter-spacing: 1px;")
+        self.lastCommandText = QLabel("None")
+        self.lastCommandText.setWordWrap(True)
+        self.lastCommandText.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding)
+        self.lastCommandText.setStyleSheet("font-size: 14px; color: #E8EAED;")
 
-        # ==================================================
-        # Assistant
-        # ==================================================
+        self.lastResponseTitle = QLabel("NOVA RESPONSE")
+        self.lastResponseTitle.setStyleSheet("font-size: 11px; font-weight: bold; color: #2ECC71; letter-spacing: 1px;")
+        self.lastResponseText = QLabel("None")
+        self.lastResponseText.setWordWrap(True)
+        self.lastResponseText.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding)
+        self.lastResponseText.setStyleSheet("font-size: 14px; color: #A8AFBC;")
 
-        assistant_row = QHBoxLayout()
+        interaction_layout.addWidget(self.lastCommandTitle)
+        interaction_layout.addWidget(self.lastCommandText)
 
-        assistant_row.setSpacing(
-            SPACE_24
-        )
+        divider = QFrame()
+        divider.setFrameShape(QFrame.Shape.HLine)
+        divider.setFrameShadow(QFrame.Shadow.Sunken)
+        divider.setStyleSheet("background-color: #242936; max-height: 1px; border: none;")
+        interaction_layout.addWidget(divider)
 
-        self.microphone = (
-            MicrophoneWidget()
-        )
+        interaction_layout.addWidget(self.lastResponseTitle)
+        interaction_layout.addWidget(self.lastResponseText)
 
-        assistant_row.addWidget(
-            self.microphone,
-            alignment=Qt.AlignmentFlag.AlignCenter,
-        )
+        layout.addWidget(self.lastInteractionFrame, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        self.statusWidget = (
-            StatusWidget()
-        )
+        # --------------------------------------------------
+        # 4. Recent Commands Section
+        # --------------------------------------------------
+        self.recentFrame = QFrame()
+        self.recentFrame.setFixedWidth(520)
+        recent_layout = QVBoxLayout(self.recentFrame)
+        recent_layout.setContentsMargins(0, 0, 0, 0)
+        recent_layout.setSpacing(8)
 
-        assistant_row.addWidget(
-            self.statusWidget
-        )
+        recent_title = QLabel("Recent Commands")
+        recent_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #E8EAED;")
+        recent_layout.addWidget(recent_title)
 
-        assistant_row.addStretch()
+        self.recentButtonsList: list[QPushButton] = []
+        for _ in range(4):
+            btn = QPushButton("• None")
+            btn.setStyleSheet("""
+                QPushButton {
+                    text-align: left;
+                    background: transparent;
+                    border: none;
+                    color: #A8AFBC;
+                    padding: 4px 0px;
+                    font-size: 13px;
+                }
+                QPushButton:hover {
+                    color: #5B8CFF;
+                }
+            """)
+            btn.setVisible(False)
+            btn.clicked.connect(self._on_recent_clicked)
+            recent_layout.addWidget(btn)
+            self.recentButtonsList.append(btn)
 
-        layout.addLayout(
-            assistant_row
-        )
+        layout.addWidget(self.recentFrame, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # ==================================================
-        # Quick Actions
-        # ==================================================
+        layout.addSpacing(5)
 
-        quick_title = QLabel(
-            "Quick Actions"
-        )
+        # --------------------------------------------------
+        # 5. Quick Actions Section
+        # --------------------------------------------------
+        self.quickFrame = QFrame()
+        self.quickFrame.setFixedWidth(520)
+        quick_layout = QVBoxLayout(self.quickFrame)
+        quick_layout.setContentsMargins(0, 0, 0, 0)
+        quick_layout.setSpacing(10)
 
-        quick_title.setObjectName(
-            "SectionTitle"
-        )
+        quick_actions_title = QLabel("Quick Actions")
+        quick_actions_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #E8EAED;")
+        quick_layout.addWidget(quick_actions_title)
 
-        layout.addWidget(
-            quick_title
-        )
+        pills_layout = QHBoxLayout()
+        pills_layout.setSpacing(12)
 
-        self.cardsLayout = QGridLayout()
+        calc_btn = QPushButton("Calculator")
+        browser_btn = QPushButton("Browser")
+        files_btn = QPushButton("Files")
+        music_btn = QPushButton("Music")
 
-        self.cardsLayout.setSpacing(
-            CARD_SPACING
-        )
+        pill_style = """
+            QPushButton {
+                background-color: #151820;
+                color: #A8AFBC;
+                border: 1px solid #242936;
+                border-radius: 16px;
+                padding: 8px 16px;
+                font-weight: 500;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background-color: #242936;
+                color: #FFFFFF;
+                border-color: #5B8CFF;
+            }
+            QPushButton:pressed {
+                background-color: #111318;
+            }
+        """
+        for btn in [calc_btn, browser_btn, files_btn, music_btn]:
+            btn.setStyleSheet(pill_style)
+            pills_layout.addWidget(btn)
 
-        layout.addLayout(
-            self.cardsLayout
-        )
-    
-        cards = [
-
-            CardData(
-                title="Start Voice Assistant",
-                description="Begin a conversation with Nova using your microphone.",
-                icon="fa6s.microphone",
-                action_text="Start",
-            ),
-
-            CardData(
-                title="Open Browser",
-                description="Browse the web using Nova's integrated browser.",
-                icon="fa6s.globe",
-                action_text="Open",
-            ),
-
-            CardData(
-                title="Search Files",
-                description="Find files instantly using natural language.",
-                icon="fa6s.folder-open",
-                action_text="Search",
-            ),
-
-            CardData(
-                title="Play Music",
-                description="Control music playback with voice commands.",
-                icon="fa6s.music",
-                action_text="Launch",
-            ),
-
-        ]
-
-        row = 0
-        column = 0
-
-        for card in cards:
-
-            widget = ActionCard(card)
-
-            self.cardsLayout.addWidget(
-                widget,
-                row,
-                column,
-            )
-
-            column += 1
-
-            if column == 2:
-                column = 0
-                row += 1
-
-        # ==================================================
-        # Recent Activity
-        # ==================================================
-
-        recent_title = QLabel("Recent Activity")
-
-        recent_title.setObjectName(
-            "SectionTitle"
-        )
-
-        layout.addWidget(recent_title)
-
-        self.activityFrame = QFrame()
-
-        self.activityFrame.setObjectName(
-            "ActivityFrame"
-        )
-
-        activity_layout = QVBoxLayout(
-            self.activityFrame
-        )
-
-        activity_layout.setContentsMargins(
-            SPACE_16,
-            SPACE_16,
-            SPACE_16,
-            SPACE_16,
-        )
-
-        activity_layout.setSpacing(10)
-
-        self.activityLabel = QLabel(
-            "No recent activity."
-        )
-
-        self.activityLabel.setWordWrap(True)
-
-        activity_layout.addWidget(
-            self.activityLabel
-        )
-
-        layout.addWidget(
-            self.activityFrame
-        )
+        quick_layout.addLayout(pills_layout)
+        layout.addWidget(self.quickFrame, alignment=Qt.AlignmentFlag.AlignCenter)
 
         layout.addStretch()
+
+        # Wire up pills
+        calc_btn.clicked.connect(lambda: self.commandTriggered.emit("open calculator"))
+        browser_btn.clicked.connect(self.browserRequested)
+        files_btn.clicked.connect(self.filesRequested)
+        music_btn.clicked.connect(self.musicRequested)
 
     # ======================================================
     # Public API
     # ======================================================
 
-    def setStatus(
-        self,
-        text: str,
-    ) -> None:
+    def setStatus(self, text: str) -> None:
         """
         Update assistant status.
         """
+        self.statusLabel.setText(text)
 
-        self.statusWidget.setStatus(text)
-
-    def setRecentActivity(
-        self,
-        text: str,
-    ) -> None:
+    def setRecentActivity(self, text: str) -> None:
         """
-        Update recent activity.
+        Fallback implementation for updates.
         """
+        self.update_interaction_history()
 
-        self.activityLabel.setText(text)
-
-    def microphoneWidget(
-        self,
-    ) -> MicrophoneWidget:
+    def microphoneWidget(self) -> MicrophoneWidget:
         """
         Return the microphone widget.
         """
-
         return self.microphone
 
-    def status(
-        self,
-    ) -> StatusWidget:
-        """
-        Return the status widget.
-        """
+    def _toggle_voice(self) -> None:
+        if self._voice_running:
+            self.stop_voice_requested.emit()
+        else:
+            self.start_voice_requested.emit()
 
+    def on_voice_state_changed(self, state: str) -> None:
+        """
+        Update HomePage status, prompt text and microphone animation based on controller state.
+        """
+        if state == "Listening...":
+            self.statusLabel.setText("🟢 Listening...")
+            self.statusLabel.setStyleSheet("font-size: 15px; font-weight: bold; color: #2ECC71;")
+            self.promptLabel.setText("How can I help today?")
+            self.microphone.setListening(True)
+            self.microphone.setThinking(False)
+            self.microphone.setSpeaking(False)
+            self._voice_running = True
+        elif state == "Thinking...":
+            self.statusLabel.setText("🟡 Thinking...")
+            self.statusLabel.setStyleSheet("font-size: 15px; font-weight: bold; color: #F4B400;")
+            self.promptLabel.setText("Thinking...")
+            self.microphone.setListening(False)
+            self.microphone.setThinking(True)
+            self.microphone.setSpeaking(False)
+            self._voice_running = True
+        elif state == "Speaking...":
+            self.statusLabel.setText("🔵 Speaking...")
+            self.statusLabel.setStyleSheet("font-size: 15px; font-weight: bold; color: #5B8CFF;")
+            self.promptLabel.setText("Speaking...")
+            self.microphone.setListening(False)
+            self.microphone.setThinking(False)
+            self.microphone.setSpeaking(True)
+            self._voice_running = True
+        elif state.startswith("Standby"):
+            self.statusLabel.setText(f"⚪ {state}")
+            self.statusLabel.setStyleSheet("font-size: 15px; font-weight: bold; color: #7B8494;")
+            self.promptLabel.setText("Say 'Hey Nova' to wake me up")
+            self.microphone.reset()
+            self._voice_running = True
+        else:
+            self.statusLabel.setText("⚪ Standby")
+            self.statusLabel.setStyleSheet("font-size: 15px; font-weight: bold; color: #7B8494;")
+            self.promptLabel.setText("How can I help today?")
+            self.microphone.reset()
+            self._voice_running = False
+
+    def _on_recent_clicked(self) -> None:
+        btn = self.sender()
+        if isinstance(btn, QPushButton):
+            cmd = btn.property("command")
+            if cmd:
+                self.commandTriggered.emit(cmd)
+
+    def update_interaction_history(self) -> None:
+        """
+        Loads from global conversation memory and refreshes Home UI.
+        """
+        from app.memory.conversation_memory import conversation_memory
+        history = conversation_memory.all()
+
+        # 1. Update Last Command / Response
+        if history:
+            last = history[0]
+            user_clean = re.sub(r"\*\*|`", "", last.user)
+            assistant_clean = re.sub(r"\*\*|`", "", last.assistant)
+
+            self.lastCommandText.setText(user_clean)
+            self.lastResponseText.setText(assistant_clean)
+            self.lastInteractionFrame.setVisible(True)
+        else:
+            self.lastCommandText.setText("None")
+            self.lastResponseText.setText("None")
+            self.lastInteractionFrame.setVisible(False)
+
+        # 2. Update Recent Commands list (unique list to avoid duplicates)
+        unique_commands = []
+        for item in history:
+            cmd = item.user.strip()
+            # Strip phonetic wake word variants cleanly
+            cmd_clean = re.sub(r"^(hey\s+)?(nova|noha|noah|nowa|lova|ova|noba|no\s+va)\b", "", cmd, flags=re.IGNORECASE).strip()
+            cmd_clean = re.sub(r"^[^\w]+|[^\w]+$", "", cmd_clean).strip()
+            if not cmd_clean:
+                cmd_clean = cmd
+            if cmd_clean and cmd_clean not in unique_commands:
+                unique_commands.append(cmd_clean)
+            if len(unique_commands) >= 4:
+                break
+
+        for idx, btn in enumerate(self.recentButtonsList):
+            if idx < len(unique_commands):
+                cmd_val = unique_commands[idx]
+                btn.setText(f"• {cmd_val}")
+                btn.setProperty("command", cmd_val)
+                btn.setVisible(True)
+            else:
+                btn.setVisible(False)
+
+        if not unique_commands:
+            self.recentFrame.setVisible(False)
+        else:
+            self.recentFrame.setVisible(True)
+
+    def status(self) -> QWidget:
+        """
+        Return backwards compatible dummy status widget.
+        """
         return self.statusWidget
 
     def sizeHint(self):
         from PySide6.QtCore import QSize
-
         return QSize(1200, 800)
 
     def minimumSizeHint(self):
         from PySide6.QtCore import QSize
-
         return QSize(900, 600)
-
 
 __all__ = [
     "HomePage",

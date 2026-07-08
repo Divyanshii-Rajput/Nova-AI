@@ -55,6 +55,8 @@ class MusicPage(QWidget):
 
     previousRequested = Signal()
 
+    music_completed = Signal()
+
     def __init__(
         self,
         parent: QWidget | None = None,
@@ -306,6 +308,15 @@ class MusicPage(QWidget):
 
         except Exception:
             pass
+
+        # Log manual music search/play into conversation memory
+        from app.memory.conversation_memory import conversation_memory
+        conversation_memory.add(
+            user=f"Play Music: {song}",
+            assistant=response.message,
+        )
+
+        self.music_completed.emit()
     
     
     
@@ -387,6 +398,25 @@ class MusicPage(QWidget):
         """
 
         value = max(0, min(100, value))
+
+    def refresh(self) -> None:
+        """
+        Refresh recently played music list from memory.
+        """
+        self.clear_playlist()
+        from app.memory.conversation_memory import conversation_memory
+        for conv in conversation_memory.all():
+            user_text = conv.user.lower().strip()
+            assistant_text = conv.assistant.lower()
+            if (
+                "play" in user_text
+                or "playing" in assistant_text
+            ):
+                display_text = conv.user
+                if display_text.startswith("Play Music:"):
+                    display_text = display_text[len("Play Music:"):].strip()
+                item_text = f"{conv.timestamp.strftime('%H:%M:%S')} - {display_text} -> {conv.assistant}"
+                self.playlist.addItem(item_text)
 
     def reset(self) -> None:
         """

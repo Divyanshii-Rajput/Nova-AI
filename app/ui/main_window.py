@@ -108,10 +108,18 @@ class MainWindow(QMainWindow):
             WINDOW_TITLE
         )
 
-        self.resize(
-            DEFAULT_WINDOW_WIDTH,
-            DEFAULT_WINDOW_HEIGHT,
-        )
+        from PySide6.QtGui import QGuiApplication
+        screen = QGuiApplication.primaryScreen()
+        if screen:
+            geom = screen.availableGeometry()
+            width = min(DEFAULT_WINDOW_WIDTH, geom.width() - 40)
+            height = min(DEFAULT_WINDOW_HEIGHT, geom.height() - 40)
+            self.resize(width, height)
+        else:
+            self.resize(
+                DEFAULT_WINDOW_WIDTH,
+                DEFAULT_WINDOW_HEIGHT,
+            )
 
         self.setMinimumSize(
             MINIMUM_WINDOW_WIDTH,
@@ -294,6 +302,10 @@ class MainWindow(QMainWindow):
 
         self.voice_controller.state_changed.connect(
             home_page.on_voice_state_changed
+        )
+
+        self.voice_controller.command_recognized.connect(
+            home_page.on_command_recognized
         )
 
         home_page.browserRequested.connect(

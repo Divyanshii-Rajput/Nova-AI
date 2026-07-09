@@ -124,14 +124,20 @@ class VoiceController(QObject):
             "Paused"
         )
 
+        if self.worker and hasattr(self.worker, 'engine') and self.worker.engine:
+            self.worker.engine.recorder.should_stop = True
+
+        self.speaker.stop()
+        if self.assistant and hasattr(self.assistant, 'assistant') and self.assistant.assistant:
+            try:
+                self.assistant.assistant.speaker.stop()
+            except Exception:
+                pass
+
         if self.thread:
-
             self.thread.quit()
-
-            self.thread.wait()
-
+            # Do NOT block the GUI thread with wait()
             self.thread = None
-
             self.worker = None
 
     

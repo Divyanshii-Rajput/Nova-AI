@@ -188,8 +188,8 @@ class Sidebar(QFrame):
 
             NavigationItem(
                 MUSIC_PAGE,
-                "Music",
-                "fa6s.music",
+                "Videos",
+                "fa6s.video",
             ),
         ]
 

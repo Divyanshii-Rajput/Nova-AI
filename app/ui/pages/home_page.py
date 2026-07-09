@@ -50,6 +50,7 @@ class HomePage(QWidget):
 
         self.setObjectName("HomePage")
         self._voice_running = False
+        self.last_spoken_command = ""
         
         # Backwards compatibility dummy status widget
         self.statusWidget = QWidget()
@@ -281,6 +282,10 @@ class HomePage(QWidget):
         else:
             self.start_voice_requested.emit()
 
+    def on_command_recognized(self, command: str) -> None:
+        self.last_spoken_command = command
+        self.promptLabel.setText(f'You said: "{command}"')
+
     def on_voice_state_changed(self, state: str) -> None:
         """
         Update HomePage status, prompt text and microphone animation based on controller state.
@@ -288,7 +293,7 @@ class HomePage(QWidget):
         if state == "Listening...":
             self.statusLabel.setText("🟢 Listening...")
             self.statusLabel.setStyleSheet("font-size: 15px; font-weight: bold; color: #2ECC71;")
-            self.promptLabel.setText("How can I help today?")
+            self.promptLabel.setText("Listening...")
             self.microphone.setListening(True)
             self.microphone.setThinking(False)
             self.microphone.setSpeaking(False)
@@ -296,7 +301,10 @@ class HomePage(QWidget):
         elif state == "Thinking...":
             self.statusLabel.setText("🟡 Thinking...")
             self.statusLabel.setStyleSheet("font-size: 15px; font-weight: bold; color: #F4B400;")
-            self.promptLabel.setText("Thinking...")
+            if self.last_spoken_command:
+                self.promptLabel.setText(f'You said: "{self.last_spoken_command}"')
+            else:
+                self.promptLabel.setText("Thinking...")
             self.microphone.setListening(False)
             self.microphone.setThinking(True)
             self.microphone.setSpeaking(False)
@@ -304,7 +312,10 @@ class HomePage(QWidget):
         elif state == "Speaking...":
             self.statusLabel.setText("🔵 Speaking...")
             self.statusLabel.setStyleSheet("font-size: 15px; font-weight: bold; color: #5B8CFF;")
-            self.promptLabel.setText("Speaking...")
+            if self.last_spoken_command:
+                self.promptLabel.setText(f'You said: "{self.last_spoken_command}"')
+            else:
+                self.promptLabel.setText("Speaking...")
             self.microphone.setListening(False)
             self.microphone.setThinking(False)
             self.microphone.setSpeaking(True)

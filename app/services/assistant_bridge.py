@@ -7,6 +7,8 @@ from PySide6.QtCore import QObject, Signal, Slot
 from app.assistant import Assistant
 from app.ui.thread_manager import thread_manager
 from app.memory.conversation_memory import conversation_memory
+from app.llm.llm_router import LLMRouter
+from app.models.intent import Intent
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +37,7 @@ class AssistantBridge(QObject):
         super().__init__()
 
         self.assistant = Assistant()
+        self.router = LLMRouter()
         self.memory = conversation_memory
 
     @Slot(str)
@@ -68,7 +71,10 @@ class AssistantBridge(QObject):
             message
         )
 
-        response = self.assistant.engine.execute(command)
+        if command.intent not in (Intent.AI_CHAT, Intent.UNKNOWN):
+            response = self.assistant.engine.execute(command)
+        else:
+            response = self.router.generate(command.cleaned_text)
 
         print("DEBUG RESPONSE:", response)
         print("SUCCESS:", response.success)

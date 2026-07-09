@@ -86,7 +86,7 @@ class MusicPage(QWidget):
         root.setSpacing(PAGE_SPACING)
 
         self.searchBar = SearchBar(
-            "Play a song..."
+            "Play a video..."
         )
 
         root.addWidget(
@@ -110,7 +110,7 @@ class MusicPage(QWidget):
 
         self.albumArt.setPixmap(
             resources.icon(
-                "fa6s.music"
+                "fa6s.video"
             ).pixmap(
                 96,
                 96,
@@ -123,7 +123,7 @@ class MusicPage(QWidget):
         )
 
         self.trackTitle = QLabel(
-            "No Track Playing"
+            "No Video Playing"
         )
 
         self.trackTitle.setAlignment(
@@ -139,7 +139,7 @@ class MusicPage(QWidget):
         )
 
         self.artistLabel = QLabel(
-            "Unknown Artist"
+            "Unknown Source"
         )
 
         self.artistLabel.setAlignment(
@@ -423,9 +423,9 @@ class MusicPage(QWidget):
         Restore the page to its default state.
         """
 
-        self.trackTitle.setText("No Track Playing")
+        self.trackTitle.setText("No Video Playing")
 
-        self.artistLabel.setText("Unknown Artist")
+        self.artistLabel.setText("Unknown Source")
 
         self.progressSlider.setValue(0)
 

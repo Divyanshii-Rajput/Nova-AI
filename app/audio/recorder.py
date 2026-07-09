@@ -20,11 +20,15 @@ class AudioRecorder:
 
     OUTPUT_PATH = Path("assets/audio/input.wav")
 
+    def __init__(self):
+        self.should_stop = False
+
     def record(self, duration: int = 10) -> Path:
         """
         Record audio dynamically. Starts recording immediately and stops
         when the user stops speaking (silence detected) or max duration is reached.
         """
+        self.should_stop = False
         # Ensure the parent directory exists
         self.OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
@@ -49,6 +53,7 @@ class AudioRecorder:
                     calib_chunks.append(chunk)
                     recorded_chunks.append(chunk)
 
+                # Calibrate ambient noise
                 calib_data = np.concatenate(calib_chunks)
                 ambient_rms = np.sqrt(np.mean(calib_data.astype(np.float32) ** 2))
 
@@ -63,6 +68,9 @@ class AudioRecorder:
                 chunks_recorded = 2
 
                 while chunks_recorded < max_chunks:
+                    if self.should_stop:
+                        logger.info("Stop flag detected, stopping recording stream.")
+                        break
                     chunk, _ = stream.read(chunk_samples)
                     recorded_chunks.append(chunk)
                     chunks_recorded += 1

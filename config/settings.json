@@ -1,7 +1,7 @@
 {
     "theme": "System",
     "startup": false,
-    "voice": "Male",
+    "voice": "Female",
     "volume": 75,
     "model": "Gemini",
     "temperature": 50

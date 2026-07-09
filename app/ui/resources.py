@@ -132,6 +132,8 @@ class ResourceManager:
         """
 
         try:
+            if color is None:
+                color = "#B7BCC7"
             icon = qta.icon(name, color=color)
             return icon
         except Exception:

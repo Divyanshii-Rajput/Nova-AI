@@ -149,8 +149,8 @@ class NavigationRail(QFrame):
 
             RailItem(
                 MUSIC_PAGE,
-                "Music",
-                "fa6s.music",
+                "Videos",
+                "fa6s.video",
             ),
 
             RailItem(

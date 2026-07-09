@@ -87,9 +87,9 @@ class ActionEngine:
     @property
     def ai(self):
         if self._ai is None:
-            logger.info("Loading Gemini LLM Engine...")
-            from app.ai.llm_engine import LLMEngine
-            self._ai = LLMEngine()
+            logger.info("Loading LLMRouter Engine...")
+            from app.llm.llm_router import LLMRouter
+            self._ai = LLMRouter()
         return self._ai
 
     # Helper to get entity string
